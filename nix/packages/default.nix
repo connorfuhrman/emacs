@@ -10,47 +10,57 @@ let
   emacsWithPreludeDeps = (pkgs.emacsPackagesFor emacs-pkg).emacsWithPackages
     (epkgs: with epkgs; [
       magit
-      # projectile
-      # company
-      # flycheck
-      # which-key
-      # avy
-      # crux
-      # zenburn-theme
-      # undo-tree
-      # super-save
-      # smartparens
-      # volatile-highlights
-      # Add any other packages you enable via prelude-modules.el
+      projectile
+      company
+      flycheck
+      which-key
+      avy
+      crux
+      undo-tree
+      super-save
+      smartparens
+      volatile-highlights
+      doom-themes
     ]);
 
   # Runtime CLI tools that Prelude and its modules expect
   preludeTools = with pkgs; [
     git
     ripgrep
+    silver-searcher
     fd
     aspell
     aspellDicts.en
-    # Add more language servers / tools here as needed
   ];
+
+  initDir = pkgs.runCommand "make-emacs-init-dir" { } ''
+    mkdir -p $out/
+
+    cp -r ${emacs-prelude}/* $out
+    chmod -R u+w $out
+
+    cp -r ${../../emacs-config}/* $out/personal/preload
+
+    mv $out/personal/preload/early-init.el $out/early-init.el
+  '';
 
 in
 pkgs.writeShellApplication {
-  name = "emacs-nox";
+  name = "emacs";
 
   runtimeInputs = [ emacsWithPreludeDeps ] ++ preludeTools;
 
   text = ''
     exec ${emacsWithPreludeDeps}/bin/emacs \
-      --init-directory ${emacs-prelude} \
+      --init-directory ${initDir} \
       "$@"
   '';
 
   meta = with lib; {
-    description = "Emacs (nox) with Prelude configuration baked in";
-    homepage = "https://prelude.emacsredux.com/";
-    license = licenses.gpl3Plus;
-    mainProgram = "emacs-nox";
+    description = "Emacs with custom configuration";
+    homepage = "https://github.com/connorfuhrman/emacs";
+    # license = licenses.gpl3Plus;
+    mainProgram = "emacs";
     platforms = platforms.all;
   };
 }
