@@ -12,6 +12,7 @@
       devShells = {
         default = import ./default.nix { inherit pkgs; };
         cpp = import ./cpp.nix { inherit pkgs; };
+        python = import ./python.nix { inherit pkgs; };
       };
     };
 }
