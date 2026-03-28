@@ -5,25 +5,22 @@
 }:
 
 let
-  emacsWithDeps = (pkgs.emacsPackagesFor emacs-pkg).emacsWithPackages
-    (epkgs: with epkgs; [
-      magit
-      projectile
-      company
-      flycheck
-      sideline
-      # sideline-elgot
-      which-key
-      avy
-      crux
-      undo-tree
-      super-save
-      smartparens
-      volatile-highlights
-      envrc
-      doom-themes
-      rainbow-mode
-    ]);
+  emacsPackages = epkgs: with epkgs; [
+    ace-window ag avy browse-kill-ring crux discover-my-major diff-hl
+    diminish easy-kill editorconfig expand-region flycheck gist
+    git-timemachine git-modes guru-mode hl-todo imenu-anywhere
+    projectile magit move-text operate-on-number smartparens smartrep
+    super-save undo-tree volatile-highlights which-key zenburn-theme
+    zop-to-char rainbow-mode elisp-slime-nav exec-path-from-shell
+    rainbow-delimiters web-mode
+
+    vterm nix-mode yaml-mode helm cmake-mode julia-mode
+    envrc doom-themes company sideline-eglot multi-vterm
+
+    vertico consult orderless marginalia embark
+  ];
+  
+  emacsWithPackages = (pkgs.emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
 
   preludeTools = with pkgs; [
     git
@@ -34,7 +31,11 @@ let
     aspellDicts.en
   ];
 
-  initDir = pkgs.runCommand "make-emacs-init-dir" { } ''
+  extraTools = with pkgs; [
+    libvterm
+  ];
+
+  initDir = pkgs.runCommand "emacs-init-dir" { } ''
     mkdir -p $out/
 
     cp -r ${emacs-prelude}/* $out
@@ -43,50 +44,21 @@ let
     cp -r ${../../emacs-config}/* $out/personal/
 
     mv $out/personal/early-init.el $out/early-init.el
-  '';
 
-  emacsWrapped = pkgs.writeShellApplication {
-    name = "emacs";
-    runtimeInputs = [ emacsWithDeps ] ++ preludeTools;
-    text = ''
-      exec ${emacsWithDeps}/bin/emacs \
-        --init-directory ${initDir} \
-        "$@"
-    '';
-  };
+    sed -i.bak $out/core/prelude-packages.el \
+      -e '/package-archives/,/melpa.org\/packages/d' \
+      -e 's/(prelude-install-packages)/(message "[Nix Prelude] Package installation & refresh DISABLED - everything provided by Nix")/'
+
+    rm -f $out/core/prelude-packages.el.bak
+  '';
 
 in
-pkgs.stdenvNoCC.mkDerivation {
-  pname = "emacs-nox";
-  version = "dev";
-
-  dontUnpack = true;
-  dontBuild = true;
-  doCheck = true;
-
-  nativeBuildInputs = [ emacsWrapped ];
-
-  checkPhase = ''
-    echo "=== Running build-time Emacs initialization check ==="
-    echo "Init directory: ${initDir}"
-
-    ${emacsWrapped}/bin/emacs \
-      --batch \
-      --eval "(message \"✅ Emacs configuration initialized successfully\")" \
-      --eval "(kill-emacs 0)"
-
-    echo "=== Emacs build-time check PASSED ==="
+pkgs.writeShellApplication {
+  name = "emacs";
+  runtimeInputs = [ emacsWithPackages ] ++ preludeTools ++ extraTools;
+  text = ''
+    exec ${emacsWithPackages}/bin/emacs \
+      --init-directory ${initDir} \
+      "$@"
   '';
-
-  installPhase = ''
-    mkdir -p $out/bin
-    ln -s ${emacsWrapped}/bin/emacs $out/bin/emacs
-  '';
-
-  meta = with lib; {
-    description = "Emacs with custom configuration";
-    homepage = "https://github.com/connorfuhrman/emacs";
-    mainProgram = "emacs";
-    platforms = platforms.all;
-  };
 }

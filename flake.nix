@@ -17,6 +17,17 @@
       flake = false;
     };
 
+    libvterm = {
+      type = "github";
+      owner = "connorfuhrman";
+      repo = "vterm-nixpkg-darwin";
+      ref = "main";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+      };
+    };
+
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";

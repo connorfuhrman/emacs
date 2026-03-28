@@ -11,7 +11,9 @@
       packages = {
         inherit (pkgs)
           emacs
-          emacs-nox;
+          emacs-nox
+          emacs-git-nox
+          emacs-unstable-nox;
       };
     };
 }

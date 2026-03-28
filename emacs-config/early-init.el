@@ -24,3 +24,8 @@
   (make-directory prelude-autosaves-dir t))
 (unless (file-exists-p prelude-vendor-dir)
   (make-directory prelude-vendor-dir t))
+
+(setq package-enable-at-startup nil
+      package-quickstart nil
+      package-archives nil
+      package-archive-contents nil)
