@@ -1,5 +1,4 @@
 { pkgs, ... }:
-
 pkgs.mkShellNoCC {
   name = "emacs-c-ide";
 
@@ -7,7 +6,6 @@ pkgs.mkShellNoCC {
     emacs-nox
     clang-tools
     clang
-    gmake
     cmake
     bear
   ];

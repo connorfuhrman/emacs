@@ -1,4 +1,3 @@
-# overlays.nix
 { self, inputs, ... }:
 {
   flake.overlays.default = final: prev: {

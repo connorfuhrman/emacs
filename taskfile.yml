@@ -1,0 +1,7 @@
+version: '3'
+
+tasks:
+  emacs-cpp:
+    desc: "Emacs in a C/C++ development environment"
+    cmds:
+      - nix develop .#cpp --command emacs -nw

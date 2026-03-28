@@ -1,13 +1,16 @@
-{ self, inputs, ...}:
-let
-  pkgs = import inputs.nixpkgs {
-    inherit system;
-    overlays = [ inputs.self.overlays.default ];
-  };
-in
+{ self, inputs, ... }:
 {
-  flake.packages = {
-    inherit (pkgs)
-      emacs-nox;
-  };
+  perSystem = { system, ... }:
+    let
+      pkgs = import inputs.nixpkgs {
+        inherit system;
+        overlays = [ self.overlays.default ];
+      };
+    in
+    {
+      packages = {
+        inherit (pkgs)
+          emacs-nox;
+      };
+    };
 }

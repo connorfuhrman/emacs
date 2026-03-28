@@ -1,6 +1,5 @@
-# flake.nix
 {
-  description = "Emacs Prelude (nox) – proper overlay that overrides emacs-nox";
+  description = "Emacs package with prelude + custom configs";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
@@ -26,22 +25,7 @@
       imports = [
         ./nix/overlays/default.nix
         ./nix/packages/packages.nix
+        ./nix/devshells/devshells.nix
       ];
-
-      perSystem = { system, ... }:
-        # let
-        #   pkgs = import inputs.nixpkgs {
-        #     inherit system;
-        #     overlays = [ inputs.self.overlays.default ];
-        #   };
-        # in {
-        #   # Now pkgs.emacs-nox is the Prelude-wrapped version
-        #   packages.emacs-nox = pkgs.emacs-nox;
-        #   devShells = import ./nix/devshells/devshells.nix { inherit pkgs; };
-        # };
-        {
-          inherit (inputs.self)
-            packages;
-        };
     };
 }
