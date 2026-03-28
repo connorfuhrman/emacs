@@ -59,7 +59,6 @@ pkgs.writeShellApplication {
   meta = with lib; {
     description = "Emacs with custom configuration";
     homepage = "https://github.com/connorfuhrman/emacs";
-    # license = licenses.gpl3Plus;
     mainProgram = "emacs";
     platforms = platforms.all;
   };

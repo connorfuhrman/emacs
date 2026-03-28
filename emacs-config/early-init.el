@@ -1,3 +1,10 @@
+;; early-init.el
+;;
+;; Since this is being built inside a Nix package the configuration
+;; directory is within the Nix store. This overrides the cache
+;; directories for emacs packages, saves, etc. so that they are
+;; generated inside ~/.cache/emacs within a writable filesystem
+
 (setq user-emacs-directory (expand-file-name "~/.cache/emacs/"))
 
 (setq prelude-savefile-dir (expand-file-name "savefile/" user-emacs-directory))
