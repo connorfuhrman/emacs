@@ -8,8 +8,8 @@ tasks:
   emacs-cpp:
     desc: "Emacs in a C/C++ development environment"
     cmds:
-      - nix develop .#cpp --command emacs
+      - nix develop .#cpp --command emacs $@
   emacs-python:
     desc: "Emacs in a Python development environment"
     cmds:
-      - nix develop .#python --command emacs
+      - nix develop .#python --command emacs $@

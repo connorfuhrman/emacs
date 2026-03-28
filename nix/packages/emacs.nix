@@ -25,7 +25,6 @@ let
   preludeTools = with pkgs; [
     git
     ripgrep
-    silver-searcher
     fd
     aspell
     aspellDicts.en
@@ -33,6 +32,7 @@ let
 
   extraTools = with pkgs; [
     libvterm
+    silver-searcher
   ];
 
   initDir = pkgs.runCommand "emacs-init-dir" { } ''
