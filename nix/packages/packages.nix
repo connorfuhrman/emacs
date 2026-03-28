@@ -10,6 +10,7 @@
     {
       packages = {
         inherit (pkgs)
+          emacs
           emacs-nox;
       };
     };

@@ -1,4 +1,3 @@
-# packages.nix
 { pkgs
 , emacs-prelude
 , emacs-pkg
@@ -13,6 +12,8 @@ let
       projectile
       company
       flycheck
+      sideline
+      sideline-elgot
       which-key
       avy
       crux
@@ -39,9 +40,9 @@ let
     cp -r ${emacs-prelude}/* $out
     chmod -R u+w $out
 
-    cp -r ${../../emacs-config}/* $out/personal/preload
+    cp -r ${../../emacs-config}/* $out/personal/
 
-    mv $out/personal/preload/early-init.el $out/early-init.el
+    mv $out/personal/early-init.el $out/early-init.el
   '';
 
 in
