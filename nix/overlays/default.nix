@@ -2,7 +2,6 @@
 {
   flake.overlays.default = lib.composeManyExtensions [
     inputs.emacs-overlay.overlays.default
-
     inputs.libvterm.overlays.default
 
     (final: prev: {
