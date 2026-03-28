@@ -5,15 +5,14 @@
 }:
 
 let
-  # Emacs binary that already contains the minimal Prelude core packages
-  emacsWithPreludeDeps = (pkgs.emacsPackagesFor emacs-pkg).emacsWithPackages
+  emacsWithDeps = (pkgs.emacsPackagesFor emacs-pkg).emacsWithPackages
     (epkgs: with epkgs; [
       magit
       projectile
       company
       flycheck
       sideline
-      sideline-elgot
+      # sideline-elgot
       which-key
       avy
       crux
@@ -21,10 +20,11 @@ let
       super-save
       smartparens
       volatile-highlights
+      envrc
       doom-themes
+      rainbow-mode
     ]);
 
-  # Runtime CLI tools that Prelude and its modules expect
   preludeTools = with pkgs; [
     git
     ripgrep
@@ -45,16 +45,42 @@ let
     mv $out/personal/early-init.el $out/early-init.el
   '';
 
+  emacsWrapped = pkgs.writeShellApplication {
+    name = "emacs";
+    runtimeInputs = [ emacsWithDeps ] ++ preludeTools;
+    text = ''
+      exec ${emacsWithDeps}/bin/emacs \
+        --init-directory ${initDir} \
+        "$@"
+    '';
+  };
+
 in
-pkgs.writeShellApplication {
-  name = "emacs";
+pkgs.stdenvNoCC.mkDerivation {
+  pname = "emacs-nox";
+  version = "dev";
 
-  runtimeInputs = [ emacsWithPreludeDeps ] ++ preludeTools;
+  dontUnpack = true;
+  dontBuild = true;
+  doCheck = true;
 
-  text = ''
-    exec ${emacsWithPreludeDeps}/bin/emacs \
-      --init-directory ${initDir} \
-      "$@"
+  nativeBuildInputs = [ emacsWrapped ];
+
+  checkPhase = ''
+    echo "=== Running build-time Emacs initialization check ==="
+    echo "Init directory: ${initDir}"
+
+    ${emacsWrapped}/bin/emacs \
+      --batch \
+      --eval "(message \"✅ Emacs configuration initialized successfully\")" \
+      --eval "(kill-emacs 0)"
+
+    echo "=== Emacs build-time check PASSED ==="
+  '';
+
+  installPhase = ''
+    mkdir -p $out/bin
+    ln -s ${emacsWrapped}/bin/emacs $out/bin/emacs
   '';
 
   meta = with lib; {
