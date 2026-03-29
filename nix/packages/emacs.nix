@@ -1,4 +1,4 @@
-{ 
+{
   emacs-prelude
 , emacs-pkg
 , emacs-config
@@ -7,11 +7,14 @@
 , writeShellApplication
 , git
 , ripgrep
+, fzf
 , fd
 , aspell
 , aspellDicts
 , libvterm
 , silver-searcher
+, nodePackages
+, nixd
 , ...
 }:
 let
@@ -22,32 +25,34 @@ let
     projectile magit move-text operate-on-number smartparens smartrep
     super-save undo-tree volatile-highlights which-key zenburn-theme
     zop-to-char rainbow-mode elisp-slime-nav exec-path-from-shell
-    rainbow-delimiters web-mode
+    rainbow-delimiters web-mode ripgrep
 
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
-    envrc doom-themes company multi-vterm helm-xref
+    envrc doom-themes company multi-vterm helm-xref fzf
 
     vertico consult orderless marginalia embark
   ];
-  
+
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
 
-  preludeTools = [
-    git
+  extraTools = [
     ripgrep
+    fzf
     fd
     aspell
     aspellDicts.en
-  ];
-
-  extraTools = [
     libvterm
     silver-searcher
-  ];
+    nixd
+  ] ++ (with nodePackages; [
+    bash-language-server
+    yaml-language-server
+  ]);
+  
 in
 writeShellApplication {
   name = "emacs";
-  runtimeInputs = [ emacsWithPackages ] ++ preludeTools ++ extraTools;
+  runtimeInputs = [ emacsWithPackages ] ++ extraTools;
   text = ''
     exec ${emacsWithPackages}/bin/emacs \
       --init-directory ${emacs-config} \

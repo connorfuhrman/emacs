@@ -1,5 +1,5 @@
 { pkgs, ... }:
-pkgs.mkShellNoCC {
+pkgs.mkShell {
   name = "default";
   packages = with pkgs; [
     go-task

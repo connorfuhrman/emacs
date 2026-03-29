@@ -4,7 +4,7 @@ tasks:
   emacs:
     desc: "Start emacs built from this flake headless"
     cmds:
-      - $(nix build .#emacs-nox --print-out-paths)/bin/emacs
+      - $(nix build .#emacs-nox --print-out-paths)/bin/emacs $@
   emacs-cpp:
     desc: "Emacs in a C/C++ development environment"
     cmds:

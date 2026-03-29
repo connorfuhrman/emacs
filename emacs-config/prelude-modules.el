@@ -1,0 +1,6 @@
+(require 'prelude-c)
+(require 'prelude-python)
+(require 'prelude-org)
+(require 'prelude-literate-programming)
+(require 'prelude-company)
+(require 'prelude-vertico)
