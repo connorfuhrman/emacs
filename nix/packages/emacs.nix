@@ -15,7 +15,7 @@ let
     rainbow-delimiters web-mode
 
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
-    envrc doom-themes company sideline-eglot multi-vterm
+    envrc doom-themes company multi-vterm helm-xref
 
     vertico consult orderless marginalia embark
   ];

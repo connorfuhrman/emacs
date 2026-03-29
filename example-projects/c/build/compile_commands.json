@@ -1,0 +1,8 @@
+[
+{
+  "directory": "/Users/connorfuhrman/personal-projects/emacs/example-projects/c/build",
+  "command": "/usr/bin/clang    -arch arm64 -mmacosx-version-min=14.0 -o CMakeFiles/main.dir/main.c.o -c /Users/connorfuhrman/personal-projects/emacs/example-projects/c/main.c",
+  "file": "/Users/connorfuhrman/personal-projects/emacs/example-projects/c/main.c",
+  "output": "CMakeFiles/main.dir/main.c.o"
+}
+]

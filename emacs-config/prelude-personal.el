@@ -14,3 +14,12 @@
 (add-hook 'vterm-mode-hook
           (lambda ()
             (display-line-numbers-mode -1)))   ; modern Emacs
+
+
+;; Run envrc in every buffer
+(envrc-global-mode)
+
+;; vterm settings
+(add-hook 'vterm-mode-hook
+	  (lambda ()
+	    (local-set-key (kbd "C-y" 'vterm-yank)))

@@ -7,6 +7,5 @@ pkgs.mkShellNoCC {
     clang-tools
     clang
     cmake
-    bear
   ];
 }
