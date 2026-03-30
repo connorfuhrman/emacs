@@ -25,9 +25,9 @@
 (unless (file-exists-p prelude-vendor-dir)
   (make-directory prelude-vendor-dir t))
 
-(setq package-enable-at-startup nil
-      package-quickstart nil
-      package-archives nil
-      package-archive-contents nil)
+;; (setq package-enable-at-startup nil
+;;       package-quickstart nil
+;;       package-archives nil
+;;       package-archive-contents nil)
 
-(setq use-package-always-ensure nil)
+;; (setq use-package-always-ensure nil)

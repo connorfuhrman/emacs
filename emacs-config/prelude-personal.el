@@ -48,8 +48,8 @@
 (envrc-global-mode)
 
 (use-package fzf
-  ;; :bind
-  ;;   ;; Don't forget to set keybinds!
+  :ensure nil
+  :bind ("C-c f" . fzf)
   :config
   (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
         fzf/executable "fzf"

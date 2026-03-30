@@ -37,27 +37,19 @@ let
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
 
-  envPackages = [
-    ripgrep
-    fzf
-    fd
-    aspell
-    aspellDicts.en
-    libvterm
-    silver-searcher
-    nixd
-  ] ++ (with nodePackages; [
-    bash-language-server
-    yaml-language-server
-  ]);
-
-  emacsBin = writeShellApplication {
-    name = "emacs";
-    runtimeInputs = [ emacsWithPackages ] ++ envPackages;
-    text = ''
-      ${emacsWithPackages}/bin/emacs "$@"
-    '';
-  };
+  # envPackages = [
+  #   ripgrep
+  #   fzf
+  #   fd
+  #   aspell
+  #   aspellDicts.en
+  #   libvterm
+  #   silver-searcher
+  #   nixd
+  # ] ++ (with nodePackages; [
+  #   bash-language-server
+  #   yaml-language-server
+  # ]);
   
 in
 # symlinkJoin {
@@ -69,9 +61,9 @@ in
 #     for bin in $out/bin/emacs*; do
 #       if [ -f "$bin" ]; then
 #         wrapProgram "$bin" \
-#           --suffix PATH : ${lib.makeBinPath envPackages}
+#           --prefix PATH : "${lib.makeBinPath envPackages}"
 #       fi
 #     done
 #   '';
 # }
-emacsBin
+emacsWithPackages
