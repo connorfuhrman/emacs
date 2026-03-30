@@ -42,17 +42,6 @@
 ;; Run envrc in every buffer
 (envrc-global-mode)
 
-;; (use-package fzf
-;;   :ensure nil
-;;   :bind ("C-c f" . fzf)
-;;   :config
-;;   (setq fzf/args "-x --color bw --print-query --margin=1,0 --no-hscroll"
-;;         fzf/executable "fzf"
-;;         fzf/git-grep-args "-i --line-number %s"
-;;         fzf/grep-command "rg --no-heading -nH"
-;;         fzf/position-bottom t
-;;         fzf/window-height 15))
-
 (use-package fzf
   :ensure nil
   :bind (("C-s " . my/fzf-current-buffer)   ; ← fuzzy lines in THIS buffer
@@ -60,15 +49,12 @@
          ;; ("C-s f p" . fzf-grep-dwim))          ; ← project search
 	 )
   :config
-  ;; your existing settings (keep the --ansi + rg color ones)
   (setq fzf/args "-x --ansi --color=16,fg+:bright-red,hl:bright-blue,hl+:green,query:blue,prompt:yellow,info:magenta,pointer:bright-yellow,marker:bright-blue,spinner:bright-blue,header:blue --print-query --margin=1,0 --no-hscroll"
         fzf/executable "fzf"
         fzf/git-grep-args "-i --line-number %s"
         fzf/grep-command "rg --no-heading -nH --color=always"
         fzf/position-bottom t
         fzf/window-height 15)
-
-  ;; ← NEW: fzf inside the current buffer
   (defun my/fzf-current-buffer ()
     "Fuzzy search lines in the current buffer with fzf and jump to the match."
     (interactive)
