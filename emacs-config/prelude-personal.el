@@ -7,10 +7,9 @@
 ;; Disable line numbers in vterm (and multi-vterm)
 (add-hook 'vterm-mode-hook
           (lambda ()
-            (display-line-numbers-mode -1)))   ; modern Emacs
+            (display-line-numbers-mode -1)))
 
-;; Force Eglot (Prelude’s default since ~2024) and kill any leftover lsp-mode
-(setq prelude-lsp-client 'eglot)   ; explicit, though default now
+(setq prelude-lsp-client 'eglot)
 
 ;; Language-specific niceties
 (add-hook 'c-mode-common-hook #'eglot-ensure)
@@ -33,16 +32,12 @@
   (tool-bar-mode -1)
   (tooltip-mode -1)
   (xterm-mouse-mode 1)
+  (setq inhibit-startup-echo-area-message user-login-name)
+  (setq display-line-numbers-type nil)
+  (setq redisplay-dont-pause t)
+  (setq scroll-conservatively 101)
   (setq ring-bell-function 'ignore)
   (setq confirm-kill-emacs nil))
-
-;; Faster terminal rendering
-(setq inhibit-startup-echo-area-message user-login-name)
-(setq display-line-numbers-type nil)
-
-;; Blazing-fast terminal rendering
-(setq redisplay-dont-pause t)
-(setq scroll-conservatively 101)
 
 ;; Run envrc in every buffer
 (envrc-global-mode)
