@@ -15,6 +15,10 @@
 ;; Language-specific niceties
 (add-hook 'c-mode-common-hook #'eglot-ensure)
 (add-hook 'python-mode-hook #'eglot-ensure)
+(add-hook 'shell-mode-hook #'elgot-ensure)
+(add-hook 'yaml-mode-hook #'elgot-ensure)
+(add-hook 'json-mode-hook #'elgot-ensure)
+(add-hook 'nix-mode-hook #'elgot-ensure)
 (add-hook 'org-mode-hook #'visual-line-mode)
 
 ;; Terminal-only optimizations
@@ -39,6 +43,7 @@
 (envrc-global-mode)
 
 (use-package fzf
+  :ensure nil
   :bind
     ;; Don't forget to set keybinds!
   :config
