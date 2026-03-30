@@ -29,3 +29,5 @@
       package-quickstart nil
       package-archives nil
       package-archive-contents nil)
+
+(setq use-package-always-ensure nil)

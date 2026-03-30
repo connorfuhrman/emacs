@@ -1,6 +1,7 @@
 {
   lib
   # Build tooling
+, writeShellApplication
 , symlinkJoin
 , makeWrapper
   # Emacs packages
@@ -49,19 +50,28 @@ let
     bash-language-server
     yaml-language-server
   ]);
+
+  emacsBin = writeShellApplication {
+    name = "emacs";
+    runtimeInputs = [ emacsWithPackages ] ++ envPackages;
+    text = ''
+      ${emacsWithPackages}/bin/emacs "$@"
+    '';
+  };
   
 in
-symlinkJoin {
-  name = "emacs-base";
-  paths = [ emacsWithPackages ];
-  nativeBuildInputs = [ makeWrapper ];
+# symlinkJoin {
+#   name = "emacs-base";
+#   paths = [ emacsWithPackages ];
+#   nativeBuildInputs = [ makeWrapper ];
 
-  postBuild = ''
-    for bin in $out/bin/emacs*; do
-      if [ -f "$bin" ]; then
-        wrapProgram "$bin" \
-          --set PATH "${lib.makeBinPath envPackages}"
-      fi
-    done
-  '';
-}
+#   postBuild = ''
+#     for bin in $out/bin/emacs*; do
+#       if [ -f "$bin" ]; then
+#         wrapProgram "$bin" \
+#           --suffix PATH : ${lib.makeBinPath envPackages}
+#       fi
+#     done
+#   '';
+# }
+emacsBin
