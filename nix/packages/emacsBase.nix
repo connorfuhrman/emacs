@@ -1,6 +1,22 @@
 {
-  emacs-pkg
+  lib
+  # Build tooling
+, symlinkJoin
+, makeWrapper
+  # Emacs packages
+, emacs-pkg
 , emacsPackagesFor
+  # Env dependencies
+, git
+, ripgrep
+, fzf
+, fd
+, aspell
+, aspellDicts
+, libvterm
+, silver-searcher
+, nodePackages
+, nixd
 , ...
 }:
 let
@@ -13,13 +29,39 @@ let
     zop-to-char rainbow-mode elisp-slime-nav exec-path-from-shell
     rainbow-delimiters web-mode ripgrep code-cells ein elpy
     ob-async ob-ipython ob-tmux ob-deno ob-typescript
-
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
     envrc doom-themes company multi-vterm helm-xref fzf
-
-    vertico consult orderless marginalia embark
+    vertico consult orderless marginalia embark eglot-booster
   ];
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
+
+  envPackages = [
+    ripgrep
+    fzf
+    fd
+    aspell
+    aspellDicts.en
+    libvterm
+    silver-searcher
+    nixd
+  ] ++ (with nodePackages; [
+    bash-language-server
+    yaml-language-server
+  ]);
+  
 in
-emacsWithPackages
+symlinkJoin {
+  name = "emacs-base";
+  paths = [ emacsWithPackages ];
+  nativeBuildInputs = [ makeWrapper ];
+
+  postBuild = ''
+    for bin in $out/bin/emacs*; do
+      if [ -f "$bin" ]; then
+        wrapProgram "$bin" \
+          --set PATH "${lib.makeBinPath envPackages}"
+      fi
+    done
+  '';
+}

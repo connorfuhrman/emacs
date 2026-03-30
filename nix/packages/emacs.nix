@@ -1,42 +1,21 @@
 {
   emacs-base
 , emacs-config
-, lib
-, writeShellApplication
-, git
-, ripgrep
-, fzf
-, fd
-, aspell
-, aspellDicts
-, libvterm
-, silver-searcher
-, nodePackages
-, nixd
+, symlinkJoin
+, makeWrapper
 , ...
 }:
-let
-  extraTools = [
-    ripgrep
-    fzf
-    fd
-    aspell
-    aspellDicts.en
-    libvterm
-    silver-searcher
-    nixd
-  ] ++ (with nodePackages; [
-    bash-language-server
-    yaml-language-server
-  ]);
-  
-in
-writeShellApplication {
+symlinkJoin {
   name = "emacs";
-  runtimeInputs = [ emacs-base ] ++ extraTools;
-  text = ''
-    exec ${emacs-base}/bin/emacs \
-      --init-directory ${emacs-config} \
-      "$@"
+  paths = [ emacs-base ];
+  nativeBuildInputs = [ makeWrapper ];
+
+  postBuild = ''
+    for bin in $out/bin/emacs*; do
+      if [ -f "$bin" ]; then
+        wrapProgram "$bin" \
+          --add-flags "--init-directory ${emacs-config}"
+      fi
+    done
   '';
 }

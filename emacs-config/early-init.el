@@ -10,7 +10,7 @@
 (setq prelude-savefile-dir (expand-file-name "savefile/" user-emacs-directory))
 (setq prelude-backups-dir  (expand-file-name "backups/"  user-emacs-directory))
 (setq prelude-autosaves-dir (expand-file-name "autosaves/" user-emacs-directory))
-(setq package-user-dir (expand-file-name "elpa/" user-emacs-directory))
+;; (setq package-user-dir (expand-file-name "elpa/" user-emacs-directory))
 (setq prelude-override-package-user-dir nil)
 (setq prelude-vendor-dir (expand-file-name "prelude-vendor/" user-emacs-directory))
 
