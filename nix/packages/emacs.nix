@@ -37,8 +37,10 @@ symlinkJoin {
   nativeBuildInputs = [ makeWrapper ];
 
   postBuild = ''
-    wrapProgram $out/bin/emacs \
-       --add-flags "--init-directory ${emacs-config}" \
-       --set PATH "${lib.makeBinPath envPackages}"
+    for bin in $out/bin/emacs $out/bin/emacs-*; do 
+       wrapProgram $out/bin/emacs \
+          --add-flags "--init-directory ${emacs-config}" \
+          --suffix PATH : "${lib.makeBinPath envPackages}"
+    done
   '';
 }

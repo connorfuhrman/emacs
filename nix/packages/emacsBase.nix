@@ -1,23 +1,6 @@
 {
-  lib
-  # Build tooling
-, writeShellApplication
-, symlinkJoin
-, makeWrapper
-  # Emacs packages
-, emacs-pkg
+  emacs-pkg
 , emacsPackagesFor
-  # Env dependencies
-, git
-, ripgrep
-, fzf
-, fd
-, aspell
-, aspellDicts
-, libvterm
-, silver-searcher
-, nodePackages
-, nixd
 , ...
 }:
 let
@@ -36,34 +19,5 @@ let
   ];
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
-
-  # envPackages = [
-  #   ripgrep
-  #   fzf
-  #   fd
-  #   aspell
-  #   aspellDicts.en
-  #   libvterm
-  #   silver-searcher
-  #   nixd
-  # ] ++ (with nodePackages; [
-  #   bash-language-server
-  #   yaml-language-server
-  # ]);
-  
 in
-# symlinkJoin {
-#   name = "emacs-base";
-#   paths = [ emacsWithPackages ];
-#   nativeBuildInputs = [ makeWrapper ];
-
-#   postBuild = ''
-#     for bin in $out/bin/emacs*; do
-#       if [ -f "$bin" ]; then
-#         wrapProgram "$bin" \
-#           --prefix PATH : "${lib.makeBinPath envPackages}"
-#       fi
-#     done
-#   '';
-# }
 emacsWithPackages
