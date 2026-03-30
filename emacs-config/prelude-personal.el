@@ -22,9 +22,9 @@
 (add-hook 'elisp-mode-hook #'eglot-ensure)
 (add-hook 'org-mode-hook #'visual-line-mode)
 
-(use-package eglot-booster
-  :after eglot
-  :config (eglot-booster-mode))
+;; (use-package eglot-booster
+;;   :after eglot
+;;   :config (eglot-booster-mode))
 
 ;; Terminal-only optimizations
 (unless (display-graphic-p)
@@ -48,7 +48,6 @@
 (envrc-global-mode)
 
 (use-package fzf
-  :ensure nil
   ;; :bind
   ;;   ;; Don't forget to set keybinds!
   :config

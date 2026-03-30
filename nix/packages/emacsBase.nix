@@ -32,7 +32,7 @@ let
     ob-async ob-ipython ob-tmux ob-deno ob-typescript
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
     envrc doom-themes company multi-vterm helm-xref fzf
-    vertico consult orderless marginalia embark eglot-booster
+    vertico consult orderless marginalia embark
   ];
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
