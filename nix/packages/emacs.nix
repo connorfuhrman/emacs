@@ -8,8 +8,7 @@
 , ripgrep
 , fzf
 , fd
-, aspell
-, aspellDicts
+, aspellWithDicts
 , libvterm
 , silver-searcher
 , nodePackages
@@ -22,13 +21,16 @@ let
     fzf
     fd
     aspell
-    aspellDicts.en
     libvterm
     silver-searcher
     nixd
   ] ++ (with nodePackages; [
     bash-language-server
     yaml-language-server
+  ]);
+
+  aspell = aspellWithDicts (d: with d; [
+    en
   ]);
 in
 symlinkJoin {

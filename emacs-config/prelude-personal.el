@@ -61,3 +61,9 @@
           (lambda ()
             (local-set-key (kbd "C-y" 'vterm-yank))
             (display-line-numbers-mode -1)))
+
+
+(setq prelude-whitespace nil)
+
+(with-eval-after-load 'magit-mode
+  (add-hook 'after-save-hook #'magit-after-save-refresh-status t))
