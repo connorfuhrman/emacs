@@ -1,9 +1,22 @@
 {
   emacs-pkg
 , emacsPackagesFor
+, fetchFromGitHub
 , ...
 }:
 let
+  helm-ag = epkgs: epkgs.trivialBuild {
+    pname = "helm-ag";
+    version = "0.64";
+    src = fetchFromGitHub {
+      owner = "emacsattic";
+      repo = "helm-ag";
+      rev = "a7b43d9622ea5dcff3e3e0bb0b7dcc342b272171";
+      hash = "sha256-bIuZPMsY0iwkUFOfB6rGno0WvlPtbqqgujwhUb6nTLw=";
+    };
+    packageRequires = with epkgs; [ helm ];
+  };
+
   emacsPackages = epkgs: with epkgs; [
     ace-window ag avy browse-kill-ring crux discover-my-major diff-hl
     diminish easy-kill editorconfig expand-region flycheck gist
@@ -16,6 +29,8 @@ let
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
     envrc doom-themes company multi-vterm helm-xref fzf
     vertico consult orderless marginalia embark
+
+    (helm-ag epkgs)
   ];
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;

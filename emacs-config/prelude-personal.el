@@ -4,11 +4,6 @@
           'append)
 
 
-;; Disable line numbers in vterm (and multi-vterm)
-(add-hook 'vterm-mode-hook
-          (lambda ()
-            (display-line-numbers-mode -1)))
-
 (setq prelude-lsp-client 'eglot)
 
 ;; Language-specific niceties
@@ -33,39 +28,36 @@
   (tooltip-mode -1)
   (xterm-mouse-mode 1)
   (setq inhibit-startup-echo-area-message user-login-name)
-  (setq display-line-numbers-type nil)
   (setq redisplay-dont-pause t)
-  (setq scroll-conservatively 101)
+  (setq scroll-conservatively 1)
   (setq ring-bell-function 'ignore)
   (setq confirm-kill-emacs nil))
 
 ;; Run envrc in every buffer
-(envrc-global-mode)
-
-(use-package fzf
+(use-package envrc
   :ensure nil
-  :bind (("C-s " . my/fzf-current-buffer)   ; ← fuzzy lines in THIS buffer
-         ;; ("C-s f s" . fzf-grep)                ; ← see below
-         ;; ("C-s f p" . fzf-grep-dwim))          ; ← project search
-	 )
-  :config
-  (setq fzf/args "-x --ansi --color=16,fg+:bright-red,hl:bright-blue,hl+:green,query:blue,prompt:yellow,info:magenta,pointer:bright-yellow,marker:bright-blue,spinner:bright-blue,header:blue --print-query --margin=1,0 --no-hscroll"
-        fzf/executable "fzf"
-        fzf/git-grep-args "-i --line-number %s"
-        fzf/grep-command "rg --no-heading -nH --color=always"
-        fzf/position-bottom t
-        fzf/window-height 15)
-  (defun my/fzf-current-buffer ()
-    "Fuzzy search lines in the current buffer with fzf and jump to the match."
-    (interactive)
-    (let ((lines (split-string (buffer-substring-no-properties (point-min) (point-max)) "\n" t)))
-      (fzf-with-entries lines
-        (lambda (line)
-          (goto-char (point-min))
-          (re-search-forward (regexp-quote line) nil t)
-          (recenter))))))
+  :hook (envrc-global-mode))
+
+;; Make C-s a prefix for search commands (overrides default isearch!)
+(define-prefix-command 'search-map)
+(global-set-key (kbd "C-s") 'search-map)
+
+;; Search methods with helm-ag
+;; C-s f  → search current file/buffer
+;; C-s p  → search project root (uses .git / projectile / etc.)
+(use-package helm-ag
+  :ensure nil
+  :commands (helm-do-ag-this-file helm-do-ag-project-root)  ; crucial for custom package
+  :custom
+  (helm-ag-insert-at-point 'symbol)
+  ;; Use ripgrep
+  (helm-ag-base-command "rg --color=never --no-heading --smart-case")
+  :bind
+  (("C-s f" . helm-do-ag-this-file)
+   ("C-s p" . helm-do-ag-project-root)))
 
 ;; vterm settings
 (add-hook 'vterm-mode-hook
           (lambda ()
-            (local-set-key (kbd "C-y" 'vterm-yank))))
+            (local-set-key (kbd "C-y" 'vterm-yank))
+            (display-line-numbers-mode -1)))
