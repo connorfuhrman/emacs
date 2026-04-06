@@ -13,6 +13,7 @@
 , silver-searcher
 , nodePackages
 , nixd
+, ncurses
 , ...
 }:
 let
@@ -24,6 +25,7 @@ let
     libvterm
     silver-searcher
     nixd
+    ncurses
   ] ++ (with nodePackages; [
     bash-language-server
     yaml-language-server

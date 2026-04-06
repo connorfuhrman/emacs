@@ -29,7 +29,7 @@ let
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
     envrc doom-themes company multi-vterm helm-xref fzf
     vertico consult orderless marginalia embark dashboard
-    nerd-icons all-the-icons
+    nerd-icons all-the-icons eat xterm-color
 
     (helm-ag epkgs)
   ];

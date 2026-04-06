@@ -65,10 +65,15 @@
    ("C-s p" . helm-do-ag-project-root)))
 
 ;; vterm settings
-(add-hook 'vterm-mode-hook
-          (lambda ()
-            (local-set-key (kbd "C-y" 'vterm-yank))
-            (display-line-numbers-mode -1)))
+(use-package vterm
+  :ensure nil
+  :config
+  (add-hook 'vterm-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-y" 'vterm-yank))
+              (display-line-numbers-mode -1)))
+  :bind
+  ("C-c t" . vterm))
 
 
 (setq prelude-whitespace nil)
@@ -104,13 +109,20 @@
 
   (setq dashboard-projects-backend 'projectile)
 
-  ;; Refresh automatically when you change config
-  (dashboard-refresh-buffer))
-
-(setq initial-buffer-choice 'dashboard-open)
+  (setq initial-buffer-choice 'dashboard-open))
 
 ;; For icons to work properly with emacsclient
 (add-hook 'server-after-make-frame-hook #'dashboard-open)
+
+;; Color support
+(use-package xterm-color
+  :ensure nil
+  :config
+  (setq compilation-environment '("TERM=xterm-256color"))
+
+  (define-advice compilation-filter (:around (f proc string) xterm-color)
+    (funcall f proc (xterm-color-filter string))))
+
 
 
 (provide 'config)

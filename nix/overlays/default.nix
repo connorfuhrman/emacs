@@ -25,8 +25,16 @@ in
         emacs-pkg = prev.emacs-git-nox;
       };
 
-      emacs-unstable-nox = mkPackage final {
-        emacs-pkg = prev.emacs-unstable-nox;
+      emacs-pgtk = mkPackage final {
+        emacs-pkg = prev.emacs-pgtk;
+      };
+      
+      emacs-git-pgtk = mkPackage final {
+        emacs-pkg = prev.emacs-git-pgtk;
+      };
+      
+      emacs-macport = mkPackage final {
+        emacs-pkg = prev.emacs-macport;
       };
 
       cfuhrman = {
