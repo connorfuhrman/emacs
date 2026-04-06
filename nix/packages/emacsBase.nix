@@ -28,7 +28,8 @@ let
     ob-async ob-ipython ob-tmux ob-deno ob-typescript
     vterm nix-mode yaml-mode helm cmake-mode julia-mode
     envrc doom-themes company multi-vterm helm-xref fzf
-    vertico consult orderless marginalia embark
+    vertico consult orderless marginalia embark dashboard
+    nerd-icons all-the-icons
 
     (helm-ag epkgs)
   ];

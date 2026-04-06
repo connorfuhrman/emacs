@@ -1,3 +1,11 @@
+;;; config.el --- Personal configuration and tweaks -*- lexical-binding: t; -*-
+;;
+;;; Commentary:
+;;
+;; Personal configuration and tweaks.
+;;
+;;; Code:
+
 ;; Confirm to exit
 (add-hook 'kill-emacs-query-functions
           (lambda () (y-or-n-p "Do you really want to exit Emacs? "))
@@ -67,3 +75,43 @@
 
 (with-eval-after-load 'magit-mode
   (add-hook 'after-save-hook #'magit-after-save-refresh-status t))
+
+
+(use-package dashboard
+  :ensure nil
+  :config
+  ;; Core setup — this makes the dashboard appear on startup
+  (dashboard-setup-startup-hook)
+
+  ;; Nice terminal-friendly defaults
+  (setq dashboard-banner-logo-title "Emacs")
+  (setq dashboard-startup-banner 'official)
+  (setq dashboard-center-content t)
+  (setq dashboard-vertically-center-content t)
+
+  ;; What to show (customize as you like)
+  (setq dashboard-items '((recents   . 5)
+                          (bookmarks . 5)
+                          (projects  . 5)
+                          (agenda    . 5)
+                          (registers . 5)))
+  
+  (setq dashboard-display-icons-p t)
+  (setq dashboard-icon-type 'nerd-icons)
+
+  (setq dashboard-set-heading-icons t)
+  (setq dashboard-set-file-icons t)
+
+  (setq dashboard-projects-backend 'projectile)
+
+  ;; Refresh automatically when you change config
+  (dashboard-refresh-buffer))
+
+(setq initial-buffer-choice 'dashboard-open)
+
+;; For icons to work properly with emacsclient
+(add-hook 'server-after-make-frame-hook #'dashboard-open)
+
+
+(provide 'config)
+;;; config.el ends here
