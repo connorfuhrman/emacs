@@ -111,9 +111,6 @@
 
   (setq initial-buffer-choice 'dashboard-open))
 
-;; For icons to work properly with emacsclient
-(add-hook 'server-after-make-frame-hook #'dashboard-open)
-
 ;; Color support
 (use-package xterm-color
   :ensure nil
