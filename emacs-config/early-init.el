@@ -1,0 +1,33 @@
+;; early-init.el
+;;
+;; Since this is being built inside a Nix package the configuration
+;; directory is within the Nix store. This overrides the cache
+;; directories for emacs packages, saves, etc. so that they are
+;; generated inside ~/.cache/emacs within a writable filesystem
+
+(setq user-emacs-directory (expand-file-name "~/.cache/emacs/"))
+
+(setq prelude-savefile-dir (expand-file-name "savefile/" user-emacs-directory))
+(setq prelude-backups-dir  (expand-file-name "backups/"  user-emacs-directory))
+(setq prelude-autosaves-dir (expand-file-name "autosaves/" user-emacs-directory))
+;; (setq package-user-dir (expand-file-name "elpa/" user-emacs-directory))
+(setq prelude-override-package-user-dir nil)
+(setq prelude-vendor-dir (expand-file-name "prelude-vendor/" user-emacs-directory))
+
+(unless (file-exists-p user-emacs-directory)
+  (make-directory user-emacs-directory t))
+(unless (file-exists-p prelude-savefile-dir)
+  (make-directory prelude-savefile-dir t))
+(unless (file-exists-p prelude-backups-dir)
+  (make-directory prelude-backups-dir t))
+(unless (file-exists-p prelude-autosaves-dir)
+  (make-directory prelude-autosaves-dir t))
+(unless (file-exists-p prelude-vendor-dir)
+  (make-directory prelude-vendor-dir t))
+
+;; (setq package-enable-at-startup nil
+;;       package-quickstart nil
+;;       package-archives nil
+;;       package-archive-contents nil)
+
+;; (setq use-package-always-ensure nil)

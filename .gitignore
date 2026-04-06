@@ -8,3 +8,5 @@ auto-save-list
 eclipse.jdt.ls
 workspace
 transient
+result
+.direnv
