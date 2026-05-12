@@ -43,8 +43,8 @@
 
 ;; Run envrc in every buffer
 (use-package envrc
-  :ensure nil
-  :hook (envrc-global-mode))
+  :ensure nil)
+(envrc-global-mode)
 
 ;; Make C-s a prefix for search commands (overrides default isearch!)
 (define-prefix-command 'search-map)
