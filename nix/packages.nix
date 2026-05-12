@@ -17,5 +17,8 @@
         inherit (pkgs.cfuhrman)
           emacs-config;
       };
+
+      _module.args.pkgs = pkgs;
+      legacyPackages = pkgs;
     };
 }
