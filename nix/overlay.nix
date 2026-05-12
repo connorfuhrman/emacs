@@ -1,9 +1,9 @@
 { lib, self, inputs, ... }:
 let
-  mkPackage = pkgs: { emacs-pkg, ...}@args: pkgs.callPackage ../packages/emacs.nix {
+  mkPackage = pkgs: { emacs-pkg, ...}@args: pkgs.callPackage ./emacs.nix {
     inherit (inputs) emacs-prelude;
     inherit (pkgs.cfuhrman) emacs-config;
-    emacs-base = pkgs.callPackage ../packages/emacsBase.nix { inherit emacs-pkg; };
+    emacs-base = pkgs.callPackage ./emacsBase.nix { inherit emacs-pkg; };
   } // args;
 in
 {
@@ -38,7 +38,7 @@ in
       };
 
       cfuhrman = {
-        emacs-config = final.callPackage ../packages/emacsInitDir.nix {
+        emacs-config = final.callPackage ./emacsInitDir.nix {
           inherit (inputs) emacs-prelude;
         };
       };

@@ -39,9 +39,9 @@
       systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
 
       imports = [
-        ./nix/overlays/default.nix
-        ./nix/packages/packages.nix
-        ./nix/devshells/devshells.nix
+        ./nix/devshell.nix
+        ./nix/overlay.nix
+        ./nix/packages.nix
       ];
     };
 }

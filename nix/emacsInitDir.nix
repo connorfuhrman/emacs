@@ -9,7 +9,7 @@ runCommand "emacs-init-dir" { } ''
     cp -r ${emacs-prelude}/* $out
     chmod -R u+w $out
 
-    cp -r ${../../emacs-config}/* $out/personal/
+    cp -r ${../emacs-config}/* $out/personal/
 
     mv $out/personal/early-init.el $out/early-init.el
 
