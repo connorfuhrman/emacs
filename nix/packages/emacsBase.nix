@@ -30,6 +30,7 @@ let
     envrc doom-themes company multi-vterm helm-xref fzf
     vertico consult orderless marginalia embark dashboard
     nerd-icons all-the-icons eat xterm-color cabal-mode haskell-mode
+    protobuf-mode
 
     (helm-ag epkgs)
   ];
