@@ -37,7 +37,7 @@ Always includes $ORG_DIRECTORY/inbox.org if ORG_DIRECTORY is set."
         (let ((dir (file-name-as-directory (expand-file-name (string-trim d)))))
           (when (file-directory-p dir)
             (setq agenda
-                  (nconc agenda (directory-files-recursively dir "\\.org\\'" nil t)))))))
+              (nconc agenda (directory-files-recursively dir "\\.org\\'" nil t)))))))
 
     ;; 2. Always ensure inbox.org is in the agenda (and create it if missing)
     (when-let ((root (getenv "ORG_DIRECTORY")))
@@ -68,40 +68,40 @@ Always includes $ORG_DIRECTORY/inbox.org if ORG_DIRECTORY is set."
 
       ;; Capture templates (C-c c)
       (setq org-capture-templates
-            `(("i" "Inbox (quick note/TODO)" entry (file "inbox.org")
-               "* %?\n  %i\n  %a" :empty-lines 1)
+        `(("i" "Inbox (quick note/TODO)" entry (file "inbox.org")
+            "* %?\n  %i\n  %a" :empty-lines 1)
 
-              ("m" "Meeting note" entry (file+datetree "meetings/meetings.org")
-               "* %? :meeting:\n** TODO %^{Task description}\n   %i\n   %a" :empty-lines 1)
+           ("m" "Meeting note" entry (file+datetree "meetings/meetings.org")
+             "* %? :meeting:\n** TODO %^{Task description}\n   %i\n   %a" :empty-lines 1)
 
-              ("t" "Standalone TODO" entry (file "inbox.org")
-               "* TODO %?\n  %i\n  %a" :empty-lines 1)))
+           ("t" "Standalone TODO" entry (file "inbox.org")
+             "* TODO %?\n  %i\n  %a" :empty-lines 1)))
 
       ;; TODO keywords
       (setq org-todo-keywords
-            '((sequence "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@/!)")))
+        '((sequence "TODO(t)" "NEXT(n)" "WAITING(w@/!)" "|" "DONE(d!)" "CANCELLED(c@/!)")))
 
       ;; Tags (work on *any* headline, not just TODOs)
       (setq org-tag-alist
-            '((:startgroup)
-              ("@work" . ?w) ("@home" . ?h) ("@computer" . ?c)
-              (:endgroup)
-              ("meeting" . ?m) ("project" . ?p) ("urgent" . ?u) ("read" . ?r)))
+        '((:startgroup)
+           ("@work" . ?w) ("@home" . ?h) ("@computer" . ?c)
+           (:endgroup)
+           ("meeting" . ?m) ("project" . ?p) ("urgent" . ?u) ("read" . ?r)))
 
       ;; Refiling (C-c C-w)
       (setq org-refile-targets '((org-agenda-files :maxlevel . 3))
-            org-refile-use-outline-path 'file
-            org-outline-path-complete-in-steps nil
-            org-refile-allow-creating-parent-nodes 'confirm)
+        org-refile-use-outline-path 'file
+        org-outline-path-complete-in-steps nil
+        org-refile-allow-creating-parent-nodes 'confirm)
 
       ;; Other sensible defaults
       (setq org-log-done 'time
-            org-log-into-drawer t
-            org-use-tag-inheritance t)
+        org-log-into-drawer t
+        org-use-tag-inheritance t)
 
       ;; Automatically load config.el from your Org root (or ~/org/) if it exists
       (let ((config-file (if org-directory
-                             (expand-file-name "config.el" org-directory)
+                           (expand-file-name "config.el" org-directory)
                            (expand-file-name "~/org/config.el"))))
         (when (file-exists-p config-file)
           (load config-file t t))))))   ; noerror + nomessage

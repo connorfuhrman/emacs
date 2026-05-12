@@ -1,6 +1,7 @@
 { self, inputs, ... }:
 {
-  perSystem = { system, ... }:
+  perSystem =
+    { system, ... }:
     let
       pkgs = import inputs.nixpkgs {
         inherit system;
@@ -13,9 +14,11 @@
           emacs
           emacs-nox
           emacs-git-nox
-          emacs-unstable-nox;
+          emacs-unstable-nox
+          ;
         inherit (pkgs.cfuhrman)
-          emacs-config;
+          emacs-config
+          ;
       };
 
       _module.args.pkgs = pkgs;

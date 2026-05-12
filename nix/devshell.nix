@@ -1,6 +1,7 @@
 { self, inputs, ... }:
 {
-  perSystem = { pkgs, ... }:
+  perSystem =
+    { pkgs, ... }:
     {
       devShells.default = pkgs.mkShell {
         packages = with pkgs; [
@@ -8,5 +9,5 @@
           go-task
         ];
       };
-  };
+    };
 }

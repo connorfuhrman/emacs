@@ -8,8 +8,8 @@
 
 ;; Confirm to exit
 (add-hook 'kill-emacs-query-functions
-          (lambda () (y-or-n-p "Do you really want to exit Emacs? "))
-          'append)
+  (lambda () (y-or-n-p "Do you really want to exit Emacs? "))
+  'append)
 
 
 (setq prelude-lsp-client 'eglot)
@@ -62,16 +62,16 @@
   (helm-ag-base-command "rg --color=never --no-heading --smart-case")
   :bind
   (("C-s f" . helm-do-ag-this-file)
-   ("C-s p" . helm-do-ag-project-root)))
+    ("C-s p" . helm-do-ag-project-root)))
 
 ;; vterm settings
 (use-package vterm
   :ensure nil
   :config
   (add-hook 'vterm-mode-hook
-            (lambda ()
-              (local-set-key (kbd "C-y" 'vterm-yank))
-              (display-line-numbers-mode -1)))
+    (lambda ()
+      (local-set-key (kbd "C-y" 'vterm-yank))
+      (display-line-numbers-mode -1)))
   :bind
   ("C-c t" . vterm))
 
@@ -96,10 +96,10 @@
 
   ;; What to show (customize as you like)
   (setq dashboard-items '((recents   . 5)
-                          (bookmarks . 5)
-                          (projects  . 5)
-                          (agenda    . 5)
-                          (registers . 5)))
+                           (bookmarks . 5)
+                           (projects  . 5)
+                           (agenda    . 5)
+                           (registers . 5)))
   
   (setq dashboard-display-icons-p t)
   (setq dashboard-icon-type 'nerd-icons)

@@ -1,20 +1,20 @@
 {
-  lib
-, emacs-base
-, emacs-config
-, symlinkJoin
-, makeWrapper
-, git
-, ripgrep
-, fzf
-, fd
-, aspellWithDicts
-, libvterm
-, silver-searcher
-, nodePackages
-, nixd
-, ncurses
-, ...
+  lib,
+  emacs-base,
+  emacs-config,
+  symlinkJoin,
+  makeWrapper,
+  git,
+  ripgrep,
+  fzf,
+  fd,
+  aspellWithDicts,
+  libvterm,
+  silver-searcher,
+  nodePackages,
+  nixd,
+  ncurses,
+  ...
 }:
 let
   envPackages = [
@@ -26,14 +26,17 @@ let
     silver-searcher
     nixd
     ncurses
-  ] ++ (with nodePackages; [
+  ]
+  ++ (with nodePackages; [
     bash-language-server
     yaml-language-server
   ]);
 
-  aspell = aspellWithDicts (d: with d; [
-    en
-  ]);
+  aspell = aspellWithDicts (
+    d: with d; [
+      en
+    ]
+  );
 in
 symlinkJoin {
   name = "emacs";
