@@ -1,5 +1,6 @@
 (require 'prelude-c)
 (require 'prelude-python)
+(require 'prelude-haskell)
 (require 'prelude-org)
 (require 'prelude-literate-programming)
 (require 'prelude-company)
