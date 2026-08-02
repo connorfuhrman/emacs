@@ -1,3 +1,4 @@
+# Base Emacs packages (non-Org). Org-specific packages live in ./org-packages.nix.
 {
   emacs-pkg,
   emacsPackagesFor,
@@ -19,8 +20,11 @@ let
       packageRequires = with epkgs; [ helm ];
     };
 
+  orgPackages = import ./org-packages.nix;
+
   emacsPackages =
-    epkgs: with epkgs; [
+    epkgs:
+    (with epkgs; [
       ace-window
       ag
       avy
@@ -92,7 +96,8 @@ let
       protobuf-mode
 
       (helm-ag epkgs)
-    ];
+    ])
+    ++ (orgPackages epkgs);
 
   emacsWithPackages = (emacsPackagesFor emacs-pkg).emacsWithPackages emacsPackages;
 in
