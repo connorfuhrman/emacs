@@ -87,21 +87,14 @@ nix build .#emacs-nox      # terminal
 
 ---
 
-## Markdown
-
-Obsidian-like Markdown visuals (`gfm-mode`, hidden markup, live preview,
-focus mode). Full keybindings and setup: **[docs/markdown.md](docs/markdown.md)**.
-
----
-
-## Layout
+## Repo Layout
 
 ```
 .
 ├── emacs-config/          # personal Prelude config (loaded from store)
 │   ├── early-init.el      # writable cache dirs under ~/.cache/emacs
 │   ├── config.el
-│   ├── markdown-config.el # Obsidian-like Markdown visuals
+│   ├── markdown-config.el
 │   ├── org-config.el
 │   └── prelude-modules.el
 ├── docs/
