@@ -14,9 +14,31 @@
   nodePackages,
   nixd,
   ncurses,
+  pandoc,
+  enchant,
+  hunspell,
+  hunspellDicts,
+  glow,
+  python3Packages,
   ...
 }:
 let
+  aspell = aspellWithDicts (
+    d: with d; [
+      en
+    ]
+  );
+
+  hunspellWithDicts = hunspell.withDicts (
+    d: with d; [
+      en_US
+    ]
+  );
+
+  # GitHub-flavored Markdown preview CLI used by grip-mode.
+  # (pkgs.grip is an unrelated GTK CD player — use the Python package.)
+  grip = python3Packages.grip;
+
   envPackages = [
     ripgrep
     fzf
@@ -26,17 +48,17 @@ let
     silver-searcher
     nixd
     ncurses
+    # Markdown visuals / preview toolchain
+    pandoc
+    enchant
+    hunspellWithDicts
+    glow
+    grip
   ]
   ++ (with nodePackages; [
     bash-language-server
     yaml-language-server
   ]);
-
-  aspell = aspellWithDicts (
-    d: with d; [
-      en
-    ]
-  );
 in
 symlinkJoin {
   name = "emacs";
@@ -48,7 +70,8 @@ symlinkJoin {
        echo "Wrapping program $bin"
        wrapProgram "$bin" \
           --add-flags "--init-directory ${emacs-config}" \
-          --suffix PATH : "${lib.makeBinPath envPackages}"
+          --suffix PATH : "${lib.makeBinPath envPackages}" \
+          --prefix DICPATH : "${hunspellDicts.en_US}/share/hunspell"
     done
   '';
 }

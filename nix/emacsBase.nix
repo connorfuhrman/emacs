@@ -122,6 +122,21 @@ let
         ]
       ))
 
+      # Markdown visuals (Obsidian-like chrome, no vault/linking)
+      markdown-mode
+      edit-indirect
+      olivetti
+      visual-fill-column
+      mixed-pitch
+      jinx
+      impatient-mode
+      impatient-showdown
+      simple-httpd
+      emojify
+      grip-mode
+      typo
+      adaptive-wrap
+
       (helm-ag epkgs)
     ];
 
