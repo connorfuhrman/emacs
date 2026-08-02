@@ -12,21 +12,10 @@
   'append)
 
 
-(setq prelude-lsp-client 'eglot)
+;; Use lsp-mode (not eglot). Full IDE chrome lives in lsp-ide.el.
+(setq prelude-lsp-client 'lsp-mode)
 
-;; Language-specific niceties
-(add-hook 'c-mode-common-hook #'eglot-ensure)
-(add-hook 'python-mode-hook #'eglot-ensure)
-(add-hook 'shell-mode-hook #'eglot-ensure)
-(add-hook 'yaml-mode-hook #'eglot-ensure)
-(add-hook 'json-mode-hook #'eglot-ensure)
-(add-hook 'nix-mode-hook #'eglot-ensure)
-(add-hook 'elisp-mode-hook #'eglot-ensure)
 (add-hook 'org-mode-hook #'visual-line-mode)
-
-;; (use-package eglot-booster
-;;   :after eglot
-;;   :config (eglot-booster-mode))
 
 ;; Terminal-only optimizations
 (unless (display-graphic-p)

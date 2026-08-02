@@ -1,7 +1,15 @@
 (require 'prelude-c)
 (require 'prelude-python)
 (require 'prelude-haskell)
+(require 'prelude-go)
+(require 'prelude-rust)
+(require 'prelude-js)
+(require 'prelude-ts)
+(require 'prelude-shell)
+(require 'prelude-yaml)
 (require 'prelude-org)
 (require 'prelude-literate-programming)
 (require 'prelude-company)
 (require 'prelude-vertico)
+;; lsp-mode module loads on demand via prelude-lsp-enable when
+;; prelude-lsp-client is 'lsp-mode (set in config.el).

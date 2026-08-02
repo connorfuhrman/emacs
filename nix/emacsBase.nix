@@ -91,6 +91,43 @@ let
       haskell-mode
       protobuf-mode
 
+      # --- lsp-mode IDE stack ---
+      lsp-mode
+      lsp-ui
+      lsp-treemacs
+      lsp-pyright
+      lsp-haskell
+      dap-mode
+      consult-lsp
+      yasnippet
+      yasnippet-snippets
+      treemacs
+      treemacs-projectile
+      treemacs-magit
+      treemacs-nerd-icons
+      posframe
+      symbol-overlay
+      highlight-indent-guides
+      breadcrumb
+      pretty-hydra
+
+      # Language major modes + prelude module deps
+      go-mode
+      gotest
+      go-projectile
+      rust-mode
+      cargo
+      flycheck-rust
+      ron-mode
+      toml-mode
+      typescript-mode
+      js2-mode
+      js2-refactor
+      json-mode
+      zig-mode
+      tuareg
+      julia-mode
+
       (helm-ag epkgs)
     ];
 
