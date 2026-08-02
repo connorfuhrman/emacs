@@ -14,9 +14,28 @@
   nodePackages,
   nixd,
   ncurses,
+  pandoc,
+  enchant,
+  hunspell,
+  hunspellDicts,
+  glow,
+  grip,
+  stdenv,
   ...
 }:
 let
+  aspell = aspellWithDicts (
+    d: with d; [
+      en
+    ]
+  );
+
+  hunspellWithDicts = hunspell.withDicts (
+    d: with d; [
+      en_US
+    ]
+  );
+
   envPackages = [
     ripgrep
     fzf
@@ -26,17 +45,18 @@ let
     silver-searcher
     nixd
     ncurses
+    # Markdown visuals / preview toolchain
+    pandoc
+    enchant
+    hunspellWithDicts
+    glow
   ]
+  # grip is Linux-only in nixpkgs; grip-mode still works if grip is on PATH.
+  ++ lib.optional stdenv.hostPlatform.isLinux grip
   ++ (with nodePackages; [
     bash-language-server
     yaml-language-server
   ]);
-
-  aspell = aspellWithDicts (
-    d: with d; [
-      en
-    ]
-  );
 in
 symlinkJoin {
   name = "emacs";
@@ -48,7 +68,8 @@ symlinkJoin {
        echo "Wrapping program $bin"
        wrapProgram "$bin" \
           --add-flags "--init-directory ${emacs-config}" \
-          --suffix PATH : "${lib.makeBinPath envPackages}"
+          --suffix PATH : "${lib.makeBinPath envPackages}" \
+          --prefix DICPATH : "${hunspellDicts.en_US}/share/hunspell"
     done
   '';
 }
