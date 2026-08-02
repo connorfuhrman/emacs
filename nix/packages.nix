@@ -18,6 +18,7 @@
           ;
         inherit (pkgs.cfuhrman)
           emacs-config
+          orgctl
           ;
       };
 

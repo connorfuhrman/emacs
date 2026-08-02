@@ -7,11 +7,10 @@
 let
   mkPackage =
     pkgs:
-    { emacs-pkg, ... }@args:
-    pkgs.callPackage ./emacs.nix {
-      inherit (inputs) emacs-prelude;
-      inherit (pkgs.cfuhrman) emacs-config;
-      emacs-base = pkgs.callPackage ./emacsBase.nix { inherit emacs-pkg; };
+    { emacs-pkg, ... }:
+    pkgs.callPackage ./emacs/wrapper.nix {
+      inherit (pkgs.cfuhrman) emacs-config orgctl;
+      emacs-base = pkgs.callPackage ./emacs/packages.nix { inherit emacs-pkg; };
     };
 
   emacsVariantSpecs = [
@@ -58,8 +57,14 @@ in
       final: prev:
       {
         cfuhrman = {
-          emacs-config = final.callPackage ./emacsInitDir.nix {
+          emacs-config = final.callPackage ./emacs/init-dir.nix {
             inherit (inputs) emacs-prelude;
+          };
+          # CLI uses unwrapped emacs-nox + packages (fast, headless).
+          orgctl = final.callPackage ./orgctl.nix {
+            emacs-base = final.callPackage ./emacs/packages.nix {
+              emacs-pkg = prev.emacs-nox;
+            };
           };
         };
       }

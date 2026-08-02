@@ -2,9 +2,9 @@
   lib,
   emacs-base,
   emacs-config,
+  orgctl,
   symlinkJoin,
   makeWrapper,
-  git,
   ripgrep,
   fzf,
   fd,
@@ -14,6 +14,7 @@
   nodePackages,
   nixd,
   ncurses,
+  sqlite,
   ...
 }:
 let
@@ -26,6 +27,8 @@ let
     silver-searcher
     nixd
     ncurses
+    sqlite
+    orgctl
   ]
   ++ (with nodePackages; [
     bash-language-server
