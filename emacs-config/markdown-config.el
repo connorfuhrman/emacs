@@ -17,7 +17,7 @@
 ;;   C-c m p       live preview in Emacs side window (glow/eww, auto-refresh)
 ;;   C-c m e       markdown-mode eww live preview (built-in)
 ;;   C-c m b       external browser live preview (impatient-showdown)
-;;   C-c m g       grip-mode browser preview (needs grip on PATH)
+;;   C-c m g       grip-mode browser preview (grip CLI via Nix)
 ;;   C-c m f       toggle focus mode (olivetti + mixed-pitch)
 ;;   C-c m m       toggle markup hiding
 ;;   C-c m i       toggle inline images
@@ -523,7 +523,9 @@ after edits.  Toggle with \\[markdown-config-side-preview-mode]
   :commands (grip-mode)
   :custom
   (grip-update-after-change t)
-  (grip-preview-use-webkit nil))
+  (grip-preview-use-webkit nil)
+  ;; Prefer the Nix-provided grip on PATH (python3Packages.grip).
+  (grip-binary-path (or (executable-find "grip") "grip")))
 
 
 ;;; Optional auto-focus on entry

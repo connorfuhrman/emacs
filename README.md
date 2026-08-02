@@ -111,7 +111,7 @@ nix build .#emacs-nox      # terminal
 | `C-c m p` | **Live preview in an Emacs side window** (glow / eww, auto-refresh) |
 | `C-c m e` | Built-in `markdown-live-preview-mode` (pandoc → eww) |
 | `C-c m b` | External browser preview (impatient-showdown) |
-| `C-c m g` | GitHub-style browser preview via grip (Linux) |
+| `C-c m g` | GitHub-style browser preview via grip (Nix `python3Packages.grip`) |
 | `C-c m f` | Focus / writing mode (olivetti + mixed-pitch) |
 | `C-c m m` | Toggle markup hiding |
 | `C-c m i` | Toggle inline images |

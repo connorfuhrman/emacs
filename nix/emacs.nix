@@ -19,8 +19,7 @@
   hunspell,
   hunspellDicts,
   glow,
-  grip,
-  stdenv,
+  python3Packages,
   ...
 }:
 let
@@ -36,6 +35,10 @@ let
     ]
   );
 
+  # GitHub-flavored Markdown preview CLI used by grip-mode.
+  # (pkgs.grip is an unrelated GTK CD player — use the Python package.)
+  grip = python3Packages.grip;
+
   envPackages = [
     ripgrep
     fzf
@@ -50,9 +53,8 @@ let
     enchant
     hunspellWithDicts
     glow
+    grip
   ]
-  # grip is Linux-only in nixpkgs; grip-mode still works if grip is on PATH.
-  ++ lib.optional stdenv.hostPlatform.isLinux grip
   ++ (with nodePackages; [
     bash-language-server
     yaml-language-server
