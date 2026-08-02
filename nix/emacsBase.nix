@@ -91,6 +91,37 @@ let
       haskell-mode
       protobuf-mode
 
+      # Language major modes (syntax highlighting)
+      go-mode
+      rust-mode
+      typescript-mode
+      js2-mode
+      zig-mode
+      tuareg # OCaml
+      dune
+      modern-sh
+      treesit-auto
+      (treesit-grammars.with-grammars (
+        grammars: with grammars; [
+          tree-sitter-go
+          tree-sitter-rust
+          tree-sitter-python
+          tree-sitter-julia
+          tree-sitter-haskell
+          tree-sitter-bash
+          tree-sitter-typescript
+          tree-sitter-javascript
+          tree-sitter-tsx
+          tree-sitter-zig
+          tree-sitter-ocaml
+          tree-sitter-c
+          tree-sitter-cpp
+          tree-sitter-json
+          tree-sitter-yaml
+          tree-sitter-nix
+        ]
+      ))
+
       (helm-ag epkgs)
     ];
 
