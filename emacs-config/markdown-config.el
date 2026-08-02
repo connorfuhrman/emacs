@@ -9,17 +9,18 @@
 ;;   - ==highlight==, math, task checkboxes, tables, inline images
 ;;   - Focus writing mode (olivetti + mixed-pitch)
 ;;   - Soft wrap, typographic quotes, emoji, jinx spell-check
-;;   - Optional rendered previews (browser / eww / glow)
+;;   - Live rendered preview in an Emacs side window (glow / eww)
+;;   - Optional external browser preview
 ;;
 ;; Keys (markdown / gfm buffers):
 ;;
+;;   C-c m p       live preview in Emacs side window (glow/eww, auto-refresh)
+;;   C-c m e       markdown-mode eww live preview (built-in)
+;;   C-c m b       external browser live preview (impatient-showdown)
+;;   C-c m g       grip-mode browser preview (needs grip on PATH)
 ;;   C-c m f       toggle focus mode (olivetti + mixed-pitch)
 ;;   C-c m m       toggle markup hiding
 ;;   C-c m i       toggle inline images
-;;   C-c m p       impatient live browser preview
-;;   C-c m g       grip-mode preview (needs grip on PATH)
-;;   C-c m w       glow terminal preview
-;;   C-c C-c l     side-by-side eww live preview
 ;;   C-c C-x C-f   toggle native code-block fontification
 ;;   C-c '         edit fenced code block in native major mode
 ;;
@@ -82,20 +83,22 @@
 
   (markdown-nested-imenu-heading-index t)
   :bind (:map markdown-mode-map
+              ("C-c m p" . markdown-config-side-preview-mode)
+              ("C-c m e" . markdown-live-preview-mode)
+              ("C-c m b" . markdown-config-browser-preview)
+              ("C-c m g" . grip-mode)
               ("C-c m f" . markdown-config-toggle-focus)
               ("C-c m m" . markdown-toggle-markup-hiding)
               ("C-c m i" . markdown-toggle-inline-images)
-              ("C-c m p" . markdown-config-live-preview)
-              ("C-c m g" . grip-mode)
-              ("C-c m w" . markdown-config-glow-preview)
               ("C-c m s" . jinx-correct)
               :map gfm-mode-map
+              ("C-c m p" . markdown-config-side-preview-mode)
+              ("C-c m e" . markdown-live-preview-mode)
+              ("C-c m b" . markdown-config-browser-preview)
+              ("C-c m g" . grip-mode)
               ("C-c m f" . markdown-config-toggle-focus)
               ("C-c m m" . markdown-toggle-markup-hiding)
               ("C-c m i" . markdown-toggle-inline-images)
-              ("C-c m p" . markdown-config-live-preview)
-              ("C-c m g" . grip-mode)
-              ("C-c m w" . markdown-config-glow-preview)
               ("C-c m s" . jinx-correct))
   :hook ((markdown-mode . markdown-config--buffer-setup)
          (gfm-mode . markdown-config--buffer-setup)))
@@ -233,7 +236,250 @@
   :after markdown-mode)
 
 
-;;; Rendered previews (optional)
+;;; Live preview inside Emacs (side window)
+
+(defgroup markdown-config nil
+  "Obsidian-like Markdown visuals and in-Emacs preview."
+  :group 'markdown)
+
+(defcustom markdown-config-preview-backend 'auto
+  "How to render the in-Emacs side preview.
+`auto' prefers glow (best in TTY / truecolor terminals), else eww/pandoc.
+`glow' always uses glow.  `eww' always uses pandoc → eww."
+  :type '(choice (const auto) (const glow) (const eww))
+  :group 'markdown-config)
+
+(defcustom markdown-config-preview-idle 0.35
+  "Seconds of idle time before refreshing the side preview."
+  :type 'number
+  :group 'markdown-config)
+
+(defcustom markdown-config-preview-side 'right
+  "Side window placement for the live preview buffer."
+  :type '(choice (const right) (const left) (const bottom) (const top))
+  :group 'markdown-config)
+
+(defcustom markdown-config-preview-width 0.45
+  "Width (or height) fraction of the frame used by the side preview."
+  :type 'number
+  :group 'markdown-config)
+
+(defcustom markdown-config-glow-style "dark"
+  "glow -s style name (or path to a JSON style)."
+  :type 'string
+  :group 'markdown-config)
+
+(defvar-local markdown-config--preview-buffer nil
+  "Buffer object showing the live preview for this source buffer.")
+
+(defvar-local markdown-config--preview-timer nil
+  "Idle timer that refreshes the live preview.")
+
+(defvar-local markdown-config--preview-source nil
+  "Source markdown buffer for a preview buffer.")
+
+(defun markdown-config--preview-buffer-name (&optional source)
+  "Return preview buffer name for SOURCE (defaults to current buffer)."
+  (format "*md-preview: %s*"
+          (buffer-name (or source (current-buffer)))))
+
+(defun markdown-config--preview-backend ()
+  "Resolve `markdown-config-preview-backend' to `glow' or `eww'."
+  (pcase markdown-config-preview-backend
+    ('glow (if (executable-find "glow")
+               'glow
+             (user-error "glow not found on PATH")))
+    ('eww 'eww)
+    (_ (if (executable-find "glow") 'glow 'eww))))
+
+(defun markdown-config--preview-ensure-buffer ()
+  "Return the live preview buffer for the current markdown buffer."
+  (let ((name (markdown-config--preview-buffer-name)))
+    (or (and (buffer-live-p markdown-config--preview-buffer)
+             markdown-config--preview-buffer)
+        (setq markdown-config--preview-buffer
+              (get-buffer-create name)))))
+
+(defun markdown-config--preview-display (preview)
+  "Show PREVIEW buffer in a side window."
+  (let ((window
+         (display-buffer
+          preview
+          `(display-buffer-in-side-window
+            (side . ,markdown-config-preview-side)
+            (slot . 1)
+            (window-width . ,markdown-config-preview-width)
+            (window-height . ,markdown-config-preview-width)
+            (preserve-size . (t . t))
+            (window-parameters . ((no-other-window . t)
+                                 (no-delete-other-windows . t)))))))
+    (when window
+      (set-window-dedicated-p window t))
+    window))
+
+(defun markdown-config--apply-ansi ()
+  "Colorize ANSI escape sequences in the current buffer."
+  (let ((inhibit-read-only t)
+        (raw (buffer-string)))
+    (erase-buffer)
+    (insert (cond
+             ((fboundp 'xterm-color-filter)
+              (xterm-color-filter raw))
+             ((fboundp 'ansi-color-apply)
+              (ansi-color-apply raw))
+             (t raw)))))
+
+(defun markdown-config--write-temp-source ()
+  "Write current buffer contents to a temp .md file; return its path."
+  (let ((path (make-temp-file "md-preview-" nil ".md")))
+    (write-region (point-min) (point-max) path nil 'silent)
+    path))
+
+(defun markdown-config--render-glow (source preview)
+  "Render SOURCE markdown into PREVIEW buffer using glow."
+  (let ((tmp (with-current-buffer source
+               (markdown-config--write-temp-source)))
+        (style markdown-config-glow-style)
+        (width (let* ((win (get-buffer-window preview))
+                      (cols (if win (window-body-width win) fill-column)))
+                 (max 40 (min 120 cols)))))
+    (unwind-protect
+        (with-current-buffer preview
+          (let ((inhibit-read-only t)
+                (pos (point)))
+            (fundamental-mode)
+            (erase-buffer)
+            (setq-local markdown-config--preview-source source)
+            ;; -s style, -w width; no pager so output goes to stdout.
+            (let ((status (call-process
+                           "glow" nil t nil
+                           "-s" style
+                           "-w" (number-to-string width)
+                           tmp)))
+              (unless (eq status 0)
+                (insert (format "\n[glow exited with status %s]\n" status))))
+            (markdown-config--apply-ansi)
+            (goto-char (min pos (point-max)))
+            (special-mode)
+            (setq-local mode-line-format
+                        (list " MD preview (glow) | "
+                              (buffer-name source)
+                              " | C-c m p to close"))))
+      (when (and tmp (file-exists-p tmp))
+        (delete-file tmp)))))
+
+(defun markdown-config--render-eww (source preview)
+  "Render SOURCE markdown into PREVIEW buffer using pandoc → shr/eww."
+  (require 'shr)
+  (let* ((tmp-md (with-current-buffer source
+                   (markdown-config--write-temp-source)))
+         (tmp-html (make-temp-file "md-preview-" nil ".html"))
+         (pandoc (executable-find "pandoc")))
+    (unwind-protect
+        (progn
+          (unless pandoc
+            (user-error "pandoc not found on PATH (needed for eww preview)"))
+          (with-temp-buffer
+            (let ((status (call-process
+                           pandoc nil t nil
+                           tmp-md
+                           "-f" "gfm"
+                           "-t" "html5"
+                           "--standalone"
+                           "-o" tmp-html)))
+              (unless (eq status 0)
+                (user-error "pandoc failed:\n%s" (buffer-string)))))
+          (with-current-buffer preview
+            (let ((inhibit-read-only t)
+                  (pos (point))
+                  (dom nil))
+              (fundamental-mode)
+              (erase-buffer)
+              (setq-local markdown-config--preview-source source)
+              (insert-file-contents tmp-html)
+              (setq dom (libxml-parse-html-region (point-min) (point-max)))
+              (erase-buffer)
+              (let ((shr-width (let ((win (get-buffer-window preview)))
+                                 (if win (window-body-width win) 80)))
+                    (shr-use-fonts (display-graphic-p)))
+                (shr-insert-document dom))
+              (goto-char (min pos (point-max)))
+              (special-mode)
+              (setq-local mode-line-format
+                          (list " MD preview (eww) | "
+                                (buffer-name source)
+                                " | C-c m p to close")))))
+      (when (and tmp-md (file-exists-p tmp-md))
+        (delete-file tmp-md))
+      (when (and tmp-html (file-exists-p tmp-html))
+        (delete-file tmp-html)))))
+(defun markdown-config--preview-refresh (&optional source)
+  "Refresh the side preview for SOURCE (or current buffer)."
+  (let* ((source (or source (current-buffer)))
+         (preview (buffer-local-value 'markdown-config--preview-buffer source)))
+    (when (and (buffer-live-p source)
+               (buffer-live-p preview)
+               (buffer-local-value 'markdown-config-side-preview-mode source))
+      ;; Show the window first so glow/eww can size to the side pane.
+      (markdown-config--preview-display preview)
+      (pcase (with-current-buffer source (markdown-config--preview-backend))
+        ('glow (markdown-config--render-glow source preview))
+        ('eww (markdown-config--render-eww source preview))))))
+
+(defun markdown-config--preview-schedule-refresh (&rest _)
+  "Debounce a preview refresh after edits."
+  (when markdown-config-side-preview-mode
+    (when (timerp markdown-config--preview-timer)
+      (cancel-timer markdown-config--preview-timer))
+    (setq markdown-config--preview-timer
+          (run-with-idle-timer
+           markdown-config-preview-idle nil
+           #'markdown-config--preview-refresh
+           (current-buffer)))))
+
+(defun markdown-config--preview-cleanup ()
+  "Tear down preview buffer and timers for the current source buffer."
+  (when (timerp markdown-config--preview-timer)
+    (cancel-timer markdown-config--preview-timer)
+    (setq markdown-config--preview-timer nil))
+  (when (buffer-live-p markdown-config--preview-buffer)
+    (let ((win (get-buffer-window markdown-config--preview-buffer)))
+      (when win (delete-window win)))
+    (kill-buffer markdown-config--preview-buffer))
+  (setq markdown-config--preview-buffer nil))
+
+(define-minor-mode markdown-config-side-preview-mode
+  "Live Markdown preview in an Emacs side window.
+
+Renders with glow (preferred) or pandoc→eww and refreshes on idle
+after edits.  Toggle with \\[markdown-config-side-preview-mode]
+(bound to \\`C-c m p' in markdown/gfm buffers)."
+  :lighter " MD⟹"
+  :group 'markdown-config
+  (if markdown-config-side-preview-mode
+      (progn
+        (setq markdown-config--preview-buffer
+              (markdown-config--preview-ensure-buffer))
+        (add-hook 'after-change-functions
+                  #'markdown-config--preview-schedule-refresh nil t)
+        (add-hook 'after-save-hook
+                  #'markdown-config--preview-schedule-refresh nil t)
+        (add-hook 'kill-buffer-hook
+                  #'markdown-config--preview-cleanup nil t)
+        (markdown-config--preview-refresh (current-buffer))
+        (message "Markdown side preview on (%s)"
+                 (markdown-config--preview-backend)))
+    (remove-hook 'after-change-functions
+                 #'markdown-config--preview-schedule-refresh t)
+    (remove-hook 'after-save-hook
+                 #'markdown-config--preview-schedule-refresh t)
+    (remove-hook 'kill-buffer-hook
+                 #'markdown-config--preview-cleanup t)
+    (markdown-config--preview-cleanup)
+    (message "Markdown side preview off")))
+
+
+;;; External browser previews (optional)
 
 (use-package simple-httpd
   :ensure nil
@@ -253,15 +499,15 @@
   (impatient-showdown-flavor 'github)
   (impatient-showdown-background-color "#1e1e2e"))
 
-(defun markdown-config-live-preview ()
-  "Toggle auto-refreshing browser preview via impatient-showdown."
+(defun markdown-config-browser-preview ()
+  "Toggle auto-refreshing external browser preview via impatient-showdown."
   (interactive)
   (require 'impatient-showdown)
   (if (bound-and-true-p impatient-showdown-mode)
       (progn
         (impatient-showdown-mode -1)
         (impatient-mode -1)
-        (message "Markdown live preview off"))
+        (message "Markdown browser preview off"))
     (impatient-mode 1)
     (impatient-showdown-mode 1)
     (unless (process-status "httpd")
@@ -270,7 +516,7 @@
                        httpd-host httpd-port
                        (url-hexify-string (buffer-name)))))
       (browse-url url)
-      (message "Markdown live preview: %s" url))))
+      (message "Markdown browser preview: %s" url))))
 
 (use-package grip-mode
   :ensure nil
@@ -278,18 +524,6 @@
   :custom
   (grip-update-after-change t)
   (grip-preview-use-webkit nil))
-
-(defun markdown-config-glow-preview ()
-  "Preview the current Markdown buffer with glow in a compilation buffer."
-  (interactive)
-  (unless (executable-find "glow")
-    (user-error "glow not found on PATH"))
-  (let* ((file (or (buffer-file-name)
-                   (make-temp-file "glow-md-" nil ".md"
-                                   (buffer-string))))
-         (cmd (format "glow -p -s dark %s"
-                      (shell-quote-argument file))))
-    (async-shell-command cmd "*glow-preview*")))
 
 
 ;;; Optional auto-focus on entry
