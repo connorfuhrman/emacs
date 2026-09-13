@@ -9,9 +9,17 @@ x-nix-docker-plugins: &nix-docker-plugins
       environment:
         - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
 
+x-branch-if: &branch-if
+  if: |
+    build.branch == "master" || build.branch == "main" ||
+    build.branch =~ /^cursor\// ||
+    build.pull_request.base_branch == "master" ||
+    build.pull_request.base_branch == "main"
+
 steps:
   - if: |
       build.branch == "master" || build.branch == "main" ||
+      build.branch =~ /^cursor\// ||
       build.pull_request.base_branch == "master" ||
       build.pull_request.base_branch == "main"
     label: ":nix: build packages"
@@ -19,3 +27,47 @@ steps:
     command: .buildkite/scripts/build-packages.sh
     timeout_in_minutes: 90
     plugins: *nix-docker-plugins
+
+  - group: ":mac: mac-mini-macos CI"
+    key: mac-mini-macos-ci
+    <<: *branch-if
+    steps:
+      - label: ":apple: build aarch64-darwin packages"
+        key: build-packages-aarch64-darwin
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 120
+        priority: 10
+      - label: ":penguin: build aarch64-linux packages"
+        key: build-packages-aarch64-linux
+        command: .buildkite/scripts/build-packages.sh aarch64-linux
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 480
+        priority: 10
+        depends_on: build-packages-aarch64-darwin
+
+  - group: ":docker: container images"
+    key: container-images
+    <<: *branch-if
+    steps:
+      - label: ":penguin: build x86_64-linux containers"
+        key: build-containers-x86_64-linux
+        command: .buildkite/scripts/build-containers.sh x86_64-linux
+        agents:
+          queue: linux-medium
+        timeout_in_minutes: 120
+        plugins: *nix-docker-plugins
+        artifact_paths:
+          - artifacts/containers/x86_64-linux/**
+
+      - label: ":apple: build aarch64-linux containers"
+        key: build-containers-aarch64-linux
+        command: .buildkite/scripts/build-containers.sh aarch64-linux
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 480
+        priority: 10
+        artifact_paths:
+          - artifacts/containers/aarch64-linux/**

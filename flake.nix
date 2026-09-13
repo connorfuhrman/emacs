@@ -53,6 +53,7 @@
         ./nix/devshell.nix
         ./nix/overlay.nix
         ./nix/packages.nix
+        ./nix/containers.nix
         ./nix/format.nix
       ];
     };
