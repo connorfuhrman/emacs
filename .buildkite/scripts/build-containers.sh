@@ -67,7 +67,12 @@ for name in "${container_names[@]}"; do
   if [[ -n "${runtime}" ]]; then
     echo "--- :test_tube: smoke test ${name}"
     loaded="$("${runtime}" load -i "${tarball}")"
-    image_ref="$(sed -n 's/^Loaded image: //p' <<< "${loaded}" | tail -n1)"
+    image_ref=""
+    while IFS= read -r line; do
+      case "${line}" in
+        "Loaded image: "*) image_ref="${line#Loaded image: }" ;;
+      esac
+    done <<< "${loaded}"
     if [[ -z "${image_ref}" ]]; then
       echo "+++ :x: could not parse image ref from ${runtime} load output"
       echo "${loaded}"
