@@ -12,10 +12,6 @@ steps:
         key: flake-check
         command: .buildkite/scripts/flake-check.sh
         timeout_in_minutes: 90
-        retry:
-          automatic:
-            - exit_status: "*"
-              limit: 1
         plugins:
           - docker#v5.14.0:
               image: nixos/nix:2.28.2
@@ -28,10 +24,6 @@ steps:
         key: build-packages
         command: .buildkite/scripts/build-packages.sh
         timeout_in_minutes: 90
-        retry:
-          automatic:
-            - exit_status: "*"
-              limit: 1
         plugins:
           - docker#v5.14.0:
               image: nixos/nix:2.28.2
