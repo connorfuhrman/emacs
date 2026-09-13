@@ -6,24 +6,15 @@ x-branch-if: &branch-if
     build.pull_request.base_branch == "master" ||
     build.pull_request.base_branch == "main"
 
-x-mac-mini-macos: &mac-mini-macos
-  agents:
-    queue: mac-mini-macos
-
-x-timeout: &timeout
-  timeout_in_minutes: 240
-
 steps:
   - group: ":mac: mac-mini-macos CI"
     key: mac-mini-macos-ci
     <<: *branch-if
     steps:
-      - label: ":apple: build darwin packages"
-        key: build-packages-darwin
-        command: .buildkite/scripts/build-packages.sh aarch64-darwin
-        <<: [*mac-mini-macos, *timeout]
-
-      - label: ":penguin: build aarch64-linux packages"
-        key: build-packages-aarch64-linux
-        command: .buildkite/scripts/build-packages.sh aarch64-linux
-        <<: [*mac-mini-macos, *timeout]
+      - label: ":package: build darwin + aarch64-linux packages"
+        key: build-packages-mac-mini-macos
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin aarch64-linux
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 240
+        priority: 10

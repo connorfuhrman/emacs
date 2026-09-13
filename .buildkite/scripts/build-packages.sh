@@ -3,15 +3,15 @@
 # Discovery is driven by `nix eval .#packages` so this script does not
 # hardcode package names.
 #
-# Usage: build-packages.sh [filter]
+# Usage: build-packages.sh [filter...]
 #   omitted          currentSystem only
 #   darwin           every *-darwin system exported by the flake
-#   <system>         that exact flake system (e.g. aarch64-linux)
+#   <system>         that exact flake system (repeatable, e.g. aarch64-darwin aarch64-linux)
 set -euo pipefail
 
-filter="${1:-}"
+filters=("$@")
 current_host_system=""
-if [[ -z "${filter}" ]]; then
+if [[ ${#filters[@]} -eq 0 ]]; then
   current_host_system="$(nix eval --impure --raw --expr 'builtins.currentSystem')"
 fi
 
@@ -36,17 +36,22 @@ fi
 
 matches_filter() {
   local system="$1"
-  case "${filter}" in
-    "")
-      [[ "${system}" == "${current_host_system}" ]]
-      ;;
-    darwin)
-      [[ "${system}" == *-darwin ]]
-      ;;
-    *)
-      [[ "${system}" == "${filter}" ]]
-      ;;
-  esac
+  if [[ ${#filters[@]} -eq 0 ]]; then
+    [[ "${system}" == "${current_host_system}" ]]
+    return
+  fi
+  local filter
+  for filter in "${filters[@]}"; do
+    case "${filter}" in
+      darwin)
+        [[ "${system}" == *-darwin ]] && return 0
+        ;;
+      *)
+        [[ "${system}" == "${filter}" ]] && return 0
+        ;;
+    esac
+  done
+  return 1
 }
 
 selected=""
@@ -59,13 +64,13 @@ while IFS= read -r line; do
 done <<< "${discovered}"
 
 if [[ -z "${selected}" ]]; then
-  echo "+++ :x: no packages matched filter '${filter:-currentSystem}'"
+  echo "+++ :x: no packages matched filter '${filters[*]:-currentSystem}'"
   echo "Discovered:"
   echo "${discovered}"
   exit 1
 fi
 
-echo "Filter: ${filter:-currentSystem}"
+echo "Filter: ${filters[*]:-currentSystem}"
 echo "${selected}"
 
 section_emoji() {

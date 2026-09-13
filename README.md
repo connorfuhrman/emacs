@@ -127,7 +127,6 @@ nix build .#emacs-nox      # terminal
 
 | Step | What it does |
 |------|--------------|
-| **build darwin packages** | Every `flake.packages.aarch64-darwin.*` output |
-| **build aarch64-linux packages** | Every `flake.packages.aarch64-linux.*` output |
+| **build darwin + aarch64-linux packages** | Every `flake.packages.aarch64-darwin.*` and `flake.packages.aarch64-linux.*` output |
 
 Pipeline config lives in `.buildkite/`.
