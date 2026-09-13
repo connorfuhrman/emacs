@@ -123,10 +123,11 @@ nix build .#emacs-nox      # terminal
 
 ## CI
 
-[Buildkite](https://buildkite.com/connor-m-fuhrman/emacs) runs on pushes to `master`/`main` and on pull requests targeting those branches. Package builds run on the self-hosted `mac-mini-macos` agent. Darwin (`aarch64-darwin`) packages build natively; `aarch64-linux` packages offload to that host's linux-builder VM. Package names are discovered from `flake.packages` (no hardcoded list).
+[Buildkite](https://buildkite.com/connor-m-fuhrman/emacs) runs on pushes to `master`/`main` and on pull requests targeting those branches. Package builds run on the self-hosted `mac-mini-macos` agent as two steps: Darwin (`aarch64-darwin`) natively, then `aarch64-linux` on that host's linux-builder VM. Package names are discovered from `flake.packages` (no hardcoded list).
 
 | Step | What it does |
 |------|--------------|
-| **build darwin + aarch64-linux packages** | Every `flake.packages.aarch64-darwin.*` and `flake.packages.aarch64-linux.*` output |
+| **build aarch64-darwin packages** | Every `flake.packages.aarch64-darwin.*` output |
+| **build aarch64-linux packages** | Every `flake.packages.aarch64-linux.*` output (after Darwin) |
 
 Pipeline config lives in `.buildkite/`.

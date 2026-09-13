@@ -11,13 +11,21 @@ steps:
     key: mac-mini-macos-ci
     <<: *branch-if
     steps:
-      # One job so Darwin is not stuck scheduled behind t-hex on the other
-      # mac-mini slot. Script order is aarch64-darwin then aarch64-linux.
-      # 480m covers linux-builder upload-lock contention (kernel builds).
-      - label: ":package: build darwin + aarch64-linux packages"
-        key: build-packages-mac-mini-macos
-        command: .buildkite/scripts/build-packages.sh aarch64-darwin aarch64-linux
+      # Discrete steps, both on mac-mini-macos. Linux depends on Darwin so
+      # they do not race for one free slot while t-hex holds the other
+      # (Darwin would sit scheduled). 480m covers linux-builder upload lock.
+      - label: ":apple: build aarch64-darwin packages"
+        key: build-packages-aarch64-darwin
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 120
+        priority: 10
+      - label: ":penguin: build aarch64-linux packages"
+        key: build-packages-aarch64-linux
+        command: .buildkite/scripts/build-packages.sh aarch64-linux
         agents:
           queue: mac-mini-macos
         timeout_in_minutes: 480
         priority: 10
+        depends_on: build-packages-aarch64-darwin
