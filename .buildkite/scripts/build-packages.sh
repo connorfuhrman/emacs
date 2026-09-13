@@ -7,61 +7,30 @@
 #   omitted          currentSystem only
 #   darwin           every *-darwin system exported by the flake
 #   <system>         that exact flake system (repeatable, e.g. aarch64-darwin aarch64-linux)
+#
+# Set NIX_BUILD_ALL=1 to realize every selected package in one nix build
+# (better CPU saturation on hosted agents).
 set -euo pipefail
 
+script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+# shellcheck source=nix-ci-common.sh
+source "${script_dir}/nix-ci-common.sh"
+
 filters=("$@")
-current_host_system=""
 if [[ ${#filters[@]} -eq 0 ]]; then
-  current_host_system="$(nix eval --impure --raw --expr 'builtins.currentSystem')"
+  NIX_CI_CURRENT_SYSTEM="$(nix_ci_current_system)"
+  export NIX_CI_CURRENT_SYSTEM
 fi
 
 echo "--- :nix: discover flake packages"
-discovered=$(nix eval --accept-flake-config --raw .#packages --apply '
-  packages:
-    let
-      inherit (builtins) attrNames concatMap concatStringsSep sort;
-      lt = a: b: a < b;
-      systems = sort lt (attrNames packages);
-      forSystem = system:
-        map (name: "${system} ${name}")
-          (sort lt (attrNames packages.${system}));
-    in
-    concatStringsSep "\n" (concatMap forSystem systems)
-')
+discovered=$(nix_ci_discover packages)
 
 if [[ -z "${discovered}" ]]; then
   echo "+++ :x: flake packages discovery returned nothing"
   exit 1
 fi
 
-matches_filter() {
-  local system="$1"
-  if [[ ${#filters[@]} -eq 0 ]]; then
-    [[ "${system}" == "${current_host_system}" ]]
-    return
-  fi
-  local filter
-  for filter in "${filters[@]}"; do
-    case "${filter}" in
-      darwin)
-        [[ "${system}" == *-darwin ]] && return 0
-        ;;
-      *)
-        [[ "${system}" == "${filter}" ]] && return 0
-        ;;
-    esac
-  done
-  return 1
-}
-
-selected=""
-while IFS= read -r line; do
-  [[ -z "${line}" ]] && continue
-  system=${line%% *}
-  if matches_filter "${system}"; then
-    selected+="${line}"$'\n'
-  fi
-done <<< "${discovered}"
+selected=$(nix_ci_select "${discovered}" "${filters[@]}")
 
 if [[ -z "${selected}" ]]; then
   echo "+++ :x: no packages matched filter '${filters[*]:-currentSystem}'"
@@ -73,13 +42,22 @@ fi
 echo "Filter: ${filters[*]:-currentSystem}"
 echo "${selected}"
 
-section_emoji() {
-  case "$1" in
-    *-darwin) printf ':apple:' ;;
-    *-linux) printf ':penguin:' ;;
-    *) printf ':package:' ;;
-  esac
-}
+if [[ "${NIX_BUILD_ALL:-}" == "1" ]]; then
+  installables=()
+  first_system=""
+  while IFS= read -r line; do
+    [[ -z "${line}" ]] && continue
+    system=${line%% *}
+    name=${line#* }
+    first_system=${first_system:-${system}}
+    installables+=(".#packages.${system}.${name}")
+  done <<< "${selected}"
+  emoji=$(nix_ci_section_emoji "${first_system}")
+  echo "--- ${emoji} packages (parallel) ---"
+  nix_ci_build_all "${installables[@]}"
+  echo "+++ :white_check_mark: package builds succeeded"
+  exit 0
+fi
 
 current_system=""
 installables=()
@@ -88,30 +66,11 @@ build_group() {
   if [[ -z "${current_system}" ]]; then
     return
   fi
-  local emoji
-  emoji=$(section_emoji "${current_system}")
+  local emoji inst
+  emoji=$(nix_ci_section_emoji "${current_system}")
   echo "--- ${emoji} ${current_system} packages ---"
-  local inst err
-  local -a nix_args=(
-    --accept-flake-config
-    --show-trace
-    -L
-    --max-jobs auto
-    --cores 0
-  )
   for inst in "${installables[@]}"; do
-    echo "~~~ ${inst}"
-    err=$(mktemp)
-    if ! nix build "${nix_args[@]}" "${inst}" 2> >(tee "${err}" >&2); then
-      echo "+++ :x: nix build failed: ${inst}"
-      grep -oE '/nix/store/[0-9a-z]+-[^[:space:]'\''\"]+' "${err}" | sort -u | while read -r path; do
-        echo "--- nix log ${path}"
-        nix log "${path}" || true
-      done
-      rm -f "${err}"
-      exit 1
-    fi
-    rm -f "${err}"
+    nix_ci_build_one "${inst}"
   done
 }
 
