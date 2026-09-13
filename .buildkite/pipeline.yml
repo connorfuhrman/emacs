@@ -6,26 +6,18 @@ x-branch-if: &branch-if
     build.pull_request.base_branch == "master" ||
     build.pull_request.base_branch == "main"
 
-x-mac-mini: &mac-mini
-  agents:
-    queue: mac-mini-macos
-
 steps:
   - group: ":mac: mac-mini-macos CI"
     key: mac-mini-macos-ci
     <<: *branch-if
     steps:
-      # Separate clocks: a single 240m step cannot finish aarch64-linux when the
-      # shared linux-builder VM is busy (t-hex kernel builds hold the upload lock).
-      - label: ":penguin: aarch64-linux packages"
-        key: build-packages-aarch64-linux
-        command: .buildkite/scripts/build-packages.sh aarch64-linux
-        <<: *mac-mini
+      # One job so Darwin is not stuck scheduled behind t-hex on the other
+      # mac-mini slot. Script order is aarch64-darwin then aarch64-linux.
+      # 480m covers linux-builder upload-lock contention (kernel builds).
+      - label: ":package: build darwin + aarch64-linux packages"
+        key: build-packages-mac-mini-macos
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin aarch64-linux
+        agents:
+          queue: mac-mini-macos
         timeout_in_minutes: 480
         priority: 10
-      - label: ":apple: aarch64-darwin packages"
-        key: build-packages-aarch64-darwin
-        command: .buildkite/scripts/build-packages.sh aarch64-darwin
-        <<: *mac-mini
-        timeout_in_minutes: 120
-        priority: 9
