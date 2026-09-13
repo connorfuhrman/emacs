@@ -67,11 +67,6 @@ in
                 packageRequires = (old.packageRequires or [ ]) ++ [ efinal.async ];
                 nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ efinal.async ];
               });
-              # Build 15: linux-builder failed emacs-rust-mode with no streamed
-              # compile log (exit 1). Do not fail the derivation on that.
-              rust-mode = eprev.rust-mode.overrideAttrs (old: {
-                ignoreCompilationError = true;
-              });
             }
           );
       }
