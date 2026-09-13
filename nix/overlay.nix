@@ -57,20 +57,18 @@ in
     # helm-core's Package-Requires lists async, but the MELPA derivation does
     # not always put async on the native-compile load-path. aarch64-linux CI
     # then fails with: Required package `async-1.9.9' is unavailable.
-    (
-      _final: prev: {
-        emacsPackagesFor =
-          emacs:
-          (prev.emacsPackagesFor emacs).overrideScope (
-            efinal: eprev: {
-              helm-core = eprev.helm-core.overrideAttrs (old: {
-                packageRequires = (old.packageRequires or [ ]) ++ [ efinal.async ];
-                nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ efinal.async ];
-              });
-            }
-          );
-      }
-    )
+    (_final: prev: {
+      emacsPackagesFor =
+        emacs:
+        (prev.emacsPackagesFor emacs).overrideScope (
+          efinal: eprev: {
+            helm-core = eprev.helm-core.overrideAttrs (old: {
+              packageRequires = (old.packageRequires or [ ]) ++ [ efinal.async ];
+              nativeBuildInputs = (old.nativeBuildInputs or [ ]) ++ [ efinal.async ];
+            });
+          }
+        );
+    })
 
     (
       final: prev:
