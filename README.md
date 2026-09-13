@@ -102,7 +102,7 @@ nix build .#emacs-nox      # terminal
 │   └── prelude-modules.el
 ├── docs/
 │   └── markdown.md        # Markdown visuals docs
-├── nix/                   # flake modules (packages, overlay, fmt)
+├── nix/                   # flake modules (packages, overlay, checks, fmt)
 ├── flake.nix
 └── README.md
 ```
@@ -123,11 +123,12 @@ nix build .#emacs-nox      # terminal
 
 ## CI
 
-[Buildkite](https://buildkite.com/connor-m-fuhrman/emacs) runs on pushes to `master`/`main` and on pull requests targeting those branches. Package builds run on the self-hosted `mac-mini-macos` agent as two steps: Darwin (`aarch64-darwin`) natively, then `aarch64-linux` on that host's linux-builder VM. Package names are discovered from `flake.packages` (no hardcoded list).
+[Buildkite](https://buildkite.com/connor-m-fuhrman/emacs) runs on pushes to `master`/`main`, `cursor/*` branches, and pull requests targeting `master`/`main`. Every platform builds all discovered `flake.packages.<system>.*` outputs **and** all discovered `flake.checks.<system>.*` outputs (no hardcoded names).
 
-| Step | What it does |
-|------|--------------|
-| **build aarch64-darwin packages** | Every `flake.packages.aarch64-darwin.*` output |
-| **build aarch64-linux packages** | Every `flake.packages.aarch64-linux.*` output (after Darwin) |
+| Step | Agent | What it does |
+|------|-------|--------------|
+| **aarch64-darwin packages + checks** | self-hosted `mac-mini-macos` | Native Darwin packages, then flake checks |
+| **aarch64-linux packages + checks** | self-hosted `mac-mini-macos` (linux-builder VM) | After Darwin; ARM Linux packages, then flake checks |
+| **x86_64-linux packages + checks** | Buildkite hosted `linux-small` | Native x86_64-linux via `nixos/nix` Docker (`max-jobs = auto`, `cores = 0`) |
 
 Pipeline config lives in `.buildkite/`.

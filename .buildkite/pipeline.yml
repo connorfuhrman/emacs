@@ -6,6 +6,17 @@ x-branch-if: &branch-if
     build.pull_request.base_branch == "master" ||
     build.pull_request.base_branch == "main"
 
+# Hosted x86_64-linux: nixos/nix in Docker on Buildkite hosted agents.
+# NIX_CONFIG matches PR #6 (max-jobs = auto, cores = 0) so nix saturates CPUs.
+x-nix-docker-plugins: &nix-docker-plugins
+  - docker#v5.14.0:
+      image: nixos/nix:2.28.2
+      mount-checkout: true
+      propagate-environment: true
+      mount-buildkite-agent: true
+      environment:
+        - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
+
 steps:
   - group: ":mac: mac-mini-macos CI"
     key: mac-mini-macos-ci
@@ -14,18 +25,36 @@ steps:
       # Discrete steps, both on mac-mini-macos. Linux depends on Darwin so
       # they do not race for one free slot while t-hex holds the other
       # (Darwin would sit scheduled). 480m covers linux-builder upload lock.
-      - label: ":apple: build aarch64-darwin packages"
+      - label: ":apple: aarch64-darwin packages + checks"
         key: build-packages-aarch64-darwin
-        command: .buildkite/scripts/build-packages.sh aarch64-darwin
+        command: |
+          .buildkite/scripts/build-packages.sh aarch64-darwin
+          .buildkite/scripts/run-checks.sh aarch64-darwin
         agents:
           queue: mac-mini-macos
         timeout_in_minutes: 120
         priority: 10
-      - label: ":penguin: build aarch64-linux packages"
+      - label: ":penguin: aarch64-linux packages + checks"
         key: build-packages-aarch64-linux
-        command: .buildkite/scripts/build-packages.sh aarch64-linux
+        command: |
+          .buildkite/scripts/build-packages.sh aarch64-linux
+          .buildkite/scripts/run-checks.sh aarch64-linux
         agents:
           queue: mac-mini-macos
         timeout_in_minutes: 480
         priority: 10
         depends_on: build-packages-aarch64-darwin
+
+  - group: ":linux: hosted x86_64-linux CI"
+    key: hosted-x86-linux-ci
+    <<: *branch-if
+    steps:
+      - label: ":nix: x86_64-linux packages + checks"
+        key: hosted-x86-linux
+        command: .buildkite/scripts/run-hosted-x86.sh
+        agents:
+          queue: linux-small
+        # linux-small is nproc=2; native-comp of emacs packages exceeds 90m
+        # on a cold cache (build 26 still compiling past 50m).
+        timeout_in_minutes: 180
+        plugins: *nix-docker-plugins
