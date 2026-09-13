@@ -1,21 +1,31 @@
-agents:
-  queue: linux-medium
-
-x-nix-docker-plugins: &nix-docker-plugins
-  - docker#v5.14.0:
-      image: nixos/nix:2.28.2
-      mount-checkout: true
-      propagate-environment: true
-      environment:
-        - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
+# Shared fragments. Buildkite expands YAML anchors / merge keys at upload.
+x-branch-if: &branch-if
+  if: |
+    build.branch == "master" || build.branch == "main" ||
+    build.branch =~ /^cursor\// ||
+    build.pull_request.base_branch == "master" ||
+    build.pull_request.base_branch == "main"
 
 steps:
-  - if: |
-      build.branch == "master" || build.branch == "main" ||
-      build.pull_request.base_branch == "master" ||
-      build.pull_request.base_branch == "main"
-    label: ":nix: build packages"
-    key: build-packages
-    command: .buildkite/scripts/build-packages.sh
-    timeout_in_minutes: 90
-    plugins: *nix-docker-plugins
+  - group: ":mac: mac-mini-macos CI"
+    key: mac-mini-macos-ci
+    <<: *branch-if
+    steps:
+      # Discrete steps, both on mac-mini-macos. Linux depends on Darwin so
+      # they do not race for one free slot while t-hex holds the other
+      # (Darwin would sit scheduled). 480m covers linux-builder upload lock.
+      - label: ":apple: build aarch64-darwin packages"
+        key: build-packages-aarch64-darwin
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 120
+        priority: 10
+      - label: ":penguin: build aarch64-linux packages"
+        key: build-packages-aarch64-linux
+        command: .buildkite/scripts/build-packages.sh aarch64-linux
+        agents:
+          queue: mac-mini-macos
+        timeout_in_minutes: 480
+        priority: 10
+        depends_on: build-packages-aarch64-darwin
