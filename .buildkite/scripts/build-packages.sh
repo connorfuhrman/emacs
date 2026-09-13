@@ -91,6 +91,7 @@ build_group() {
   local emoji
   emoji=$(section_emoji "${current_system}")
   echo "--- ${emoji} ${current_system} packages ---"
+  local inst err
   local -a nix_args=(
     --accept-flake-config
     --show-trace
@@ -98,14 +99,20 @@ build_group() {
     --max-jobs auto
     --cores 0
   )
-  case "${current_system}" in
-    *-darwin)
-      # mac-mini nix.conf always offers linux-builder. Darwin outputs must
-      # stay native so they do not sit on that VM's upload lock.
-      nix_args+=(--option builders '')
-      ;;
-  esac
-  nix build "${nix_args[@]}" "${installables[@]}"
+  for inst in "${installables[@]}"; do
+    echo "~~~ ${inst}"
+    err=$(mktemp)
+    if ! nix build "${nix_args[@]}" "${inst}" 2> >(tee "${err}" >&2); then
+      echo "+++ :x: nix build failed: ${inst}"
+      grep -oE '/nix/store/[0-9a-z]+-[^[:space:]'\''\"]+' "${err}" | sort -u | while read -r path; do
+        echo "--- nix log ${path}"
+        nix log "${path}" || true
+      done
+      rm -f "${err}"
+      exit 1
+    fi
+    rm -f "${err}"
+  done
 }
 
 while IFS= read -r line; do
