@@ -54,5 +54,7 @@ steps:
         command: .buildkite/scripts/run-hosted-x86.sh
         agents:
           queue: linux-small
-        timeout_in_minutes: 90
+        # linux-small is nproc=2; native-comp of emacs packages exceeds 90m
+        # on a cold cache (build 26 still compiling past 50m).
+        timeout_in_minutes: 180
         plugins: *nix-docker-plugins

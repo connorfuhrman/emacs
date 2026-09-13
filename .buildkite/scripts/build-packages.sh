@@ -21,6 +21,7 @@ if [[ ${#filters[@]} -eq 0 ]]; then
   NIX_CI_CURRENT_SYSTEM="$(nix_ci_current_system)"
   export NIX_CI_CURRENT_SYSTEM
 fi
+nix_ci_maybe_use_linux_builder "${filters[@]}"
 
 echo "--- :nix: discover flake packages"
 discovered=$(nix_ci_discover packages)
