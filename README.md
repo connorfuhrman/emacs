@@ -31,6 +31,9 @@
   <a href="LICENSE">
     <img src="https://img.shields.io/badge/license-personal-lightgrey?style=for-the-badge" alt="personal config" />
   </a>
+  <a href="https://buildkite.com/connor-m-fuhrman/emacs">
+    <img src="https://badge.buildkite.com/connor-m-fuhrman-emacs.svg" alt="Buildkite CI" />
+  </a>
 </p>
 
 <p align="center">
@@ -115,3 +118,16 @@ nix build .#emacs-nox      # terminal
 | [prelude](https://github.com/bbatsov/prelude) | Base Emacs config |
 | [flake-parts](https://github.com/hercules-ci/flake-parts) | Flake structure |
 | [treefmt-nix](https://github.com/numtide/treefmt-nix) | Formatting |
+
+---
+
+## CI
+
+[Buildkite](https://buildkite.com/connor-m-fuhrman/emacs) runs on pushes to `master`/`main` and on pull requests targeting those branches.
+
+| Step | What it does |
+|------|--------------|
+| **flake check** | `nix flake check` — Emacs init checks plus treefmt formatting |
+| **build packages** | Builds every `flake.packages.<system>` output (no hardcoded names) |
+
+Pipeline config lives in `.buildkite/`.

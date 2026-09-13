@@ -1,0 +1,41 @@
+agents:
+  queue: linux-small
+
+steps:
+  - if: |
+      build.branch == "master" || build.branch == "main" ||
+      build.pull_request.base_branch == "master" ||
+      build.pull_request.base_branch == "main"
+    group: ci
+    steps:
+      - label: ":nix: flake check"
+        key: flake-check
+        command: .buildkite/scripts/flake-check.sh
+        timeout_in_minutes: 90
+        retry:
+          automatic:
+            - exit_status: "*"
+              limit: 1
+        plugins:
+          - docker#v5.14.0:
+              image: nixos/nix:2.28.2
+              mount-checkout: true
+              propagate-environment: true
+              environment:
+                - NIX_CONFIG=experimental-features = nix-command flakes
+
+      - label: ":nix: build packages"
+        key: build-packages
+        command: .buildkite/scripts/build-packages.sh
+        timeout_in_minutes: 90
+        retry:
+          automatic:
+            - exit_status: "*"
+              limit: 1
+        plugins:
+          - docker#v5.14.0:
+              image: nixos/nix:2.28.2
+              mount-checkout: true
+              propagate-environment: true
+              environment:
+                - NIX_CONFIG=experimental-features = nix-command flakes
