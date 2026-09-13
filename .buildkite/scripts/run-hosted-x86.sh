@@ -100,10 +100,10 @@ cpu_sampler() {
       tenths=$(((total_d - idle_d) * 1000 / total_d))
       echo "${tenths}" >>"${samples_file}"
       ticks=$((ticks + 1))
-      if ((ticks == 60)); then
+      if ((ticks > 0 && ticks % 60 == 0)); then
         set -- $(summarize_samples)
-        echo "~~~ CPU after 60s: samples=$1 avg=$2% peak=$3% nproc=${nproc_out} queue=${queue_name}"
-        annotate_cpu "$1" "$2" "$3" "Interim sample after 60 seconds of nix work."
+        echo "~~~ CPU after ${ticks}s: samples=$1 avg=$2% peak=$3% nproc=${nproc_out} queue=${queue_name}"
+        annotate_cpu "$1" "$2" "$3" "Interim sample after ${ticks} seconds of nix work."
       fi
     fi
     prev_idle=${idle}
@@ -156,8 +156,20 @@ echo "Checks:"
 echo "${chk_sel}"
 
 set +e
-nix_ci_build_all "${installables[@]}"
-build_rc=$?
+build_rc=1
+attempt=1
+while ((attempt <= 3)); do
+  echo "--- :nix: build attempt ${attempt}/3"
+  nix_ci_build_all "${installables[@]}"
+  build_rc=$?
+  if [[ "${build_rc}" -eq 0 ]]; then
+    break
+  fi
+  echo "^^^ +++"
+  echo "Attempt ${attempt} failed (exit ${build_rc}); retrying transient fetch/build errors"
+  attempt=$((attempt + 1))
+  sleep 15
+done
 set -e
 
 echo "1" >"${stop_file}"

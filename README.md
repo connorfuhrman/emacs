@@ -129,6 +129,6 @@ nix build .#emacs-nox      # terminal
 |------|-------|--------------|
 | **aarch64-darwin packages + checks** | self-hosted `mac-mini-macos` | Native Darwin packages, then flake checks |
 | **aarch64-linux packages + checks** | self-hosted `mac-mini-macos` (linux-builder VM) | After Darwin; ARM Linux packages, then flake checks |
-| **x86_64-linux packages + checks** | Buildkite hosted `linux-medium` (falls back to `linux-small` if CPU ≤80%) | Native x86_64-linux via `nixos/nix` Docker (`max-jobs = auto`, `cores = 0`) |
+| **x86_64-linux packages + checks** | Buildkite hosted `linux-small` | Native x86_64-linux via `nixos/nix` Docker (`max-jobs = auto`, `cores = 0`) |
 
 Pipeline config lives in `.buildkite/`.

@@ -3,10 +3,16 @@
 # Sourced by other .buildkite/scripts. Does not hardcode attr names.
 # shellcheck shell=bash
 
+# nixos/nix has no pager-friendly TTY; `nix log` otherwise hangs on less.
+export PAGER="${PAGER:-cat}"
+export NIX_PAGER="${NIX_PAGER:-cat}"
+export GIT_PAGER="${GIT_PAGER:-cat}"
+
 nix_ci_args=(
   --accept-flake-config
   --show-trace
   -L
+  --keep-going
   --max-jobs auto
   --cores 0
 )
@@ -79,9 +85,15 @@ nix_ci_section_emoji() {
 
 nix_ci_dump_failed_logs() {
   local err_file="$1"
-  grep -oE '/nix/store/[0-9a-z]+-[^[:space:]'\''\"]+' "${err_file}" | sort -u | while read -r path; do
+  local path count=0
+  grep -oE '/nix/store/[0-9a-z]+-[^[:space:]'\''\"]+\.drv' "${err_file}" | sort -u | while read -r path; do
+    count=$((count + 1))
+    if ((count > 8)); then
+      echo "--- skipping further nix log dumps"
+      break
+    fi
     echo "--- nix log ${path}"
-    nix log "${path}" || true
+    nix log --no-pager "${path}" 2>/dev/null || nix log "${path}" || true
   done
 }
 

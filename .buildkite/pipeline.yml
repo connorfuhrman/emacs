@@ -53,6 +53,6 @@ steps:
         key: hosted-x86-linux
         command: .buildkite/scripts/run-hosted-x86.sh
         agents:
-          queue: linux-medium
+          queue: linux-small
         timeout_in_minutes: 90
         plugins: *nix-docker-plugins
