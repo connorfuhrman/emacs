@@ -26,8 +26,23 @@ load_cmd() {
   fi
 }
 
-runtime="$(load_cmd || true)"
-if [[ -z "${runtime}" ]]; then
+ensure_container_runtime() {
+  if load_cmd >/dev/null 2>&1; then
+    return 0
+  fi
+  if [[ -S /var/run/docker.sock ]] && command -v nix >/dev/null 2>&1; then
+    docker_client="$(nix build --accept-flake-config --no-link --print-out-paths nixpkgs#docker.out 2>/dev/null || true)"
+    if [[ -n "${docker_client}" ]]; then
+      export PATH="${docker_client}/bin:${PATH}"
+    fi
+  fi
+  load_cmd >/dev/null 2>&1
+}
+
+runtime=""
+if ensure_container_runtime; then
+  runtime="$(load_cmd)"
+else
   echo "+++ :warning: no docker or podman found; skipping container load/run smoke tests"
 fi
 

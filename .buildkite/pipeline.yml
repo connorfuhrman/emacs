@@ -58,7 +58,15 @@ steps:
         agents:
           queue: linux-medium
         timeout_in_minutes: 120
-        plugins: *nix-docker-plugins
+        plugins:
+          - docker#v5.14.0:
+              image: nixos/nix:2.28.2
+              mount-checkout: true
+              propagate-environment: true
+              volumes:
+                - /var/run/docker.sock:/var/run/docker.sock
+              environment:
+                - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
         artifact_paths:
           - artifacts/containers/x86_64-linux/**
 
