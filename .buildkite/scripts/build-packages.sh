@@ -91,7 +91,21 @@ build_group() {
   local emoji
   emoji=$(section_emoji "${current_system}")
   echo "--- ${emoji} ${current_system} packages ---"
-  nix build --accept-flake-config --show-trace -L --max-jobs auto --cores 0 "${installables[@]}"
+  local -a nix_args=(
+    --accept-flake-config
+    --show-trace
+    -L
+    --max-jobs auto
+    --cores 0
+  )
+  case "${current_system}" in
+    *-darwin)
+      # mac-mini nix.conf always offers linux-builder. Darwin outputs must
+      # stay native so they do not sit on that VM's upload lock.
+      nix_args+=(--option builders '')
+      ;;
+  esac
+  nix build "${nix_args[@]}" "${installables[@]}"
 }
 
 while IFS= read -r line; do
