@@ -1,21 +1,28 @@
-agents:
-  queue: linux-medium
+# Shared fragments. Buildkite expands YAML anchors / merge keys at upload.
+x-branch-if: &branch-if
+  if: |
+    build.branch == "master" || build.branch == "main" ||
+    build.pull_request.base_branch == "master" ||
+    build.pull_request.base_branch == "main"
 
-x-nix-docker-plugins: &nix-docker-plugins
-  - docker#v5.14.0:
-      image: nixos/nix:2.28.2
-      mount-checkout: true
-      propagate-environment: true
-      environment:
-        - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
+x-mac-mini-macos: &mac-mini-macos
+  agents:
+    queue: mac-mini-macos
+
+x-timeout: &timeout
+  timeout_in_minutes: 240
 
 steps:
-  - if: |
-      build.branch == "master" || build.branch == "main" ||
-      build.pull_request.base_branch == "master" ||
-      build.pull_request.base_branch == "main"
-    label: ":nix: build packages"
-    key: build-packages
-    command: .buildkite/scripts/build-packages.sh
-    timeout_in_minutes: 90
-    plugins: *nix-docker-plugins
+  - group: ":mac: mac-mini-macos CI"
+    key: mac-mini-macos-ci
+    <<: *branch-if
+    steps:
+      - label: ":apple: build darwin packages"
+        key: build-packages-darwin
+        command: .buildkite/scripts/build-packages.sh aarch64-darwin
+        <<: [*mac-mini-macos, *timeout]
+
+      - label: ":penguin: build aarch64-linux packages"
+        key: build-packages-aarch64-linux
+        command: .buildkite/scripts/build-packages.sh aarch64-linux
+        <<: [*mac-mini-macos, *timeout]
