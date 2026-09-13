@@ -132,3 +132,9 @@ done <<< "${selected}"
 build_group
 
 echo "+++ :white_check_mark: package builds succeeded"
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  system=${line%% *}
+  name=${line#* }
+  echo "  ${name} (${system})"
+done <<< "${selected}"
