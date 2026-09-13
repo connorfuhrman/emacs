@@ -10,4 +10,4 @@ for name in "${names[@]}"; do
   [[ -n "$name" ]] || continue
   attrs+=(".#${name}")
 done
-nix build --accept-flake-config --show-trace -L "${attrs[@]}"
+nix build --accept-flake-config --show-trace -L --max-jobs auto --cores 0 "${attrs[@]}"

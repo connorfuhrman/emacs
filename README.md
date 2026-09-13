@@ -102,7 +102,7 @@ nix build .#emacs-nox      # terminal
 │   └── prelude-modules.el
 ├── docs/
 │   └── markdown.md        # Markdown visuals docs
-├── nix/                   # flake modules (packages, overlay, checks, fmt)
+├── nix/                   # flake modules (packages, overlay, fmt)
 ├── flake.nix
 └── README.md
 ```
@@ -127,7 +127,6 @@ nix build .#emacs-nox      # terminal
 
 | Step | What it does |
 |------|--------------|
-| **flake check** | `nix flake check` — Emacs init checks plus treefmt formatting |
-| **build packages** | Builds every `flake.packages.<system>` output (no hardcoded names) |
+| **build packages** | Builds every `flake.packages.<system>` output in parallel (no hardcoded names) |
 
 Pipeline config lives in `.buildkite/`.

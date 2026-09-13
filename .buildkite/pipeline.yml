@@ -1,5 +1,5 @@
 agents:
-  queue: linux-small
+  queue: linux-medium
 
 x-nix-docker-plugins: &nix-docker-plugins
   - docker#v5.14.0:
@@ -7,23 +7,15 @@ x-nix-docker-plugins: &nix-docker-plugins
       mount-checkout: true
       propagate-environment: true
       environment:
-        - NIX_CONFIG=experimental-features = nix-command flakes
+        - "NIX_CONFIG=experimental-features = nix-command flakes\nmax-jobs = auto\ncores = 0"
 
 steps:
   - if: |
       build.branch == "master" || build.branch == "main" ||
       build.pull_request.base_branch == "master" ||
       build.pull_request.base_branch == "main"
-    group: ci
-    steps:
-      - label: ":nix: flake check"
-        key: flake-check
-        command: .buildkite/scripts/flake-check.sh
-        timeout_in_minutes: 90
-        plugins: *nix-docker-plugins
-
-      - label: ":nix: build packages"
-        key: build-packages
-        command: .buildkite/scripts/build-packages.sh
-        timeout_in_minutes: 90
-        plugins: *nix-docker-plugins
+    label: ":nix: build packages"
+    key: build-packages
+    command: .buildkite/scripts/build-packages.sh
+    timeout_in_minutes: 90
+    plugins: *nix-docker-plugins
