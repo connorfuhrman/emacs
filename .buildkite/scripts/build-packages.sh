@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Build every installable in flake `packages` for the requested systems.
 # Discovery is driven by `nix eval .#packages` so this script does not
-# hardcode package names.
+# hardcode package names. Container images (*-container) are excluded; use
+# build-containers.sh for those.
 #
 # Usage: build-packages.sh [filter...]
 #   omitted          currentSystem only
@@ -21,10 +22,11 @@ discovered=$(nix eval --accept-flake-config --raw .#packages --apply '
     let
       inherit (builtins) attrNames concatMap concatStringsSep sort;
       lt = a: b: a < b;
+      isContainer = name: builtins.match ".*-container$" name != null;
       systems = sort lt (attrNames packages);
       forSystem = system:
         map (name: "${system} ${name}")
-          (sort lt (attrNames packages.${system}));
+          (sort lt (builtins.filter (n: !isContainer n) (attrNames packages.${system})));
     in
     concatStringsSep "\n" (concatMap forSystem systems)
 ')
@@ -130,3 +132,9 @@ done <<< "${selected}"
 build_group
 
 echo "+++ :white_check_mark: package builds succeeded"
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  system=${line%% *}
+  name=${line#* }
+  echo "  ${name} (${system})"
+done <<< "${selected}"
