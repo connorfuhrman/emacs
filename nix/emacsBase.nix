@@ -68,6 +68,7 @@ let
       vterm
       nix-mode
       yaml-mode
+      async
       helm
       cmake-mode
       julia-mode
